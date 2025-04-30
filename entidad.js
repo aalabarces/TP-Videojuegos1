@@ -4,6 +4,8 @@ class Entidad {
         this.id = Math.floor(Math.random() * 9999999);
         this.x = x;
         this.y = y;
+        this.destinoX = null;
+        this.destinoY = null;
 
         this.activo = true;
 
@@ -34,6 +36,11 @@ class Entidad {
 
     update() {
         if (!this.activo) { return }
+
+        if (this.tieneDestino()) {
+            this.irA(this.destinoX, this.destinoY);
+        }
+
         this.calcularVelocidad();
     }
 
@@ -97,5 +104,27 @@ class Entidad {
             this.accX *= factor;
             this.accY *= factor;
         }
+    }
+
+    irA(x, y) {
+        //calcula  la direccion y distancia al click
+        const dx = x - this.x;
+        const dy = y - this.y;
+        const distancia = Math.sqrt(dx * dx + dy * dy);
+        // si estamos cerca del objetivo detiene el movimiento
+        if (distancia < this.velocidadMaxima) {
+            this.x = x
+            this.y = y
+            this.destinoX = null
+            this.destinoY = null
+            this.velX = 0
+        }
+        else
+            // ubica al pj hacia el objetivo
+            this.aplicarAceleracion(dx / distancia, dy / distancia);
+    }
+
+    tieneDestino() {
+        return this.destinoX !== null && this.destinoY !== null;
     }
 }

@@ -65,6 +65,10 @@ class Juego {
             this.cuandoSeMueveElMouse(evento);
         };
 
+        window.onmousedown = (evento) => {
+            this.cuandoHaceClick(evento);
+        }
+
         window.onkeydown = (eventoTeclado) => {
             let letraApretada = eventoTeclado.key.toLowerCase();
             this.teclado[letraApretada] = true;
@@ -114,5 +118,12 @@ class Juego {
     ponerProtagonista() {
         this.protagonista = new Protagonista(500, 500, this);
         this.containerPrincipal.addChild(this.protagonista.container);
+    }
+
+    cuandoHaceClick(evento) {
+        // if (toqué un objeto interactivo o un espacio vacío) {
+        this.protagonista.destinoX = evento.x;
+        this.protagonista.destinoY = evento.y;
+        //guardar el objeto sobre el que se hizo click para accionar cuando llegue
     }
 }
