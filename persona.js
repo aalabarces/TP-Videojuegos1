@@ -1,17 +1,19 @@
 class Persona extends Entidad {
     constructor(x, y, juego) {
         super(x, y, juego);
-        this.nombre = "Persona";
         this.spritesAnimados = {};
-        this.crearContainer();
-    }
+        // this.nombre;
+        // this.apellido;
+        // this.email;
+        // this.genero;
+        // this.titulo;
+        // this.trabajo;
+        // this.frase;
+        // this.imagen;
 
-    crearContainer() {
-        super.crearContainer();
-        this.container.interactive = true;
-        this.container.on("pointerdown", (e) => {
-            console.log("click en", this);
-        });
+        this.crearContainer();
+        this.cargarSpritesAnimados();
+        this.crearPersonalidad();
     }
 
     update() {
@@ -20,6 +22,18 @@ class Persona extends Entidad {
 
     render() {
         super.render();
+    }
+
+    async cargarSpritesAnimados() {
+        //cargo el json
+        let texture = await PIXI.Assets.load("idle.png");
+
+        this.sprite = new PIXI.Sprite(texture)
+        this.container.addChild(this.sprite)
+        this.sprite.scale.set(2);
+        this.sprite.x = 100
+        this.sprite.y = 100
+        this.sprite.anchor.set(0.5, 1)
     }
 
     // async cargarSpritesAnimados() {
@@ -53,4 +67,33 @@ class Persona extends Entidad {
 
     //     this.yaCargoElSprite = true;
     // }
+
+    crearPersonalidad() {
+        fetch("./MOCK_DATA.json")
+            .then((response) => response.json())
+            .then((data) => {
+                const i = Math.floor(Math.random() * data.length);
+                this.nombre = data[i].first_name;
+                this.apellido = data[i].last_name;
+                this.email = data[i].email;
+                this.genero = data[i].gender;
+                this.titulo = data[i].title;
+                this.trabajo = data[i].job;
+                this.frase = data[i].catchphrase;
+                this.imagen = data[i].avatar;
+            });
+    }
+
+    showInfo() {
+        super.showInfo();
+        const dc = this.juego.debugContainer    //DebugContainer
+        dc.innerHTML += `<div class="separador"></div>`
+        dc.innerHTML += `<div>Nombre: ${this.titulo} ${this.nombre} ${this.apellido}</div>`
+        dc.innerHTML += `<div>Email: ${this.email}</div>`
+        dc.innerHTML += `<div>Genero: ${this.genero}</div>`
+        dc.innerHTML += `<div>Trabajo: ${this.trabajo}</div>`
+        dc.innerHTML += `<div>Frase: ${this.frase}</div>`
+        dc.innerHTML += `<img src="${this.imagen}"/>`
+
+    }
 }

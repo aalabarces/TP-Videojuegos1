@@ -29,6 +29,8 @@ class Entidad {
         this.container.interactive = true;
         this.container.on("pointerdown", (e) => {
             console.log("click en", this);
+            this.showInfo();
+            this.juego.seleccionado = this;
         });
 
         this.juego.containerPrincipal.addChild(this.container);
@@ -107,7 +109,7 @@ class Entidad {
     }
 
     irA(x, y) {
-        //calcula  la direccion y distancia al click
+        //calcula la direccion y distancia al click
         const dx = x - this.x;
         const dy = y - this.y;
         const distancia = Math.sqrt(dx * dx + dy * dy);
@@ -126,5 +128,24 @@ class Entidad {
 
     tieneDestino() {
         return this.destinoX !== null && this.destinoY !== null;
+    }
+
+    showInfo() {
+        //appendear mi data en el debugContainer
+        console.log("Soy una entidad con id:", this.id);
+        const dc = this.juego.debugContainer    //DebugContainer
+        dc.innerHTML = ''
+        dc.innerHTML += `<div>id: ${this.id}</div>`
+        dc.innerHTML += `<div>x: ${this.x}</div>`
+        dc.innerHTML += `<div>y: ${this.y}</div>`
+        dc.innerHTML += `<div>velX: ${this.velX}</div>`
+        dc.innerHTML += `<div>velY: ${this.velY}</div>`
+        dc.innerHTML += `<div>accX: ${this.accX}</div>`
+        dc.innerHTML += `<div>accY: ${this.accY}</div>`
+        dc.innerHTML += `<div>destinoX: ${this.destinoX}</div>`
+        dc.innerHTML += `<div>destinoY: ${this.destinoY}</div>`
+        dc.innerHTML += `<div>activo: ${this.activo}</div>`
+        dc.innerHTML += `<div>velocidadMaxima: ${this.velocidadMaxima}</div>`
+        dc.innerHTML += `<div>accMax: ${this.accMax}</div>`
     }
 }

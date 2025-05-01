@@ -4,7 +4,7 @@ class Protagonista extends Persona {
 
         this.container.name = "protagonista";
 
-        this.container.tint = 0x0000ff;
+        this.container.tint = 0xc915ee;
         this.velocidadMaxima = 3;
         this.accMax = 0.33;
         this.valorFriccion = 0.95;
@@ -56,8 +56,8 @@ class Protagonista extends Persona {
         this.sprite = new PIXI.Sprite(texture)
         this.container.addChild(this.sprite)
         this.sprite.scale.set(2);
-        this.sprite.x = 100
-        this.sprite.y = 100
+        // this.sprite.x = 50
+        // this.sprite.y = 50
         this.sprite.anchor.set(0.5, 1)
     }
 }

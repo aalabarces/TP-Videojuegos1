@@ -9,6 +9,10 @@ class Juego {
 
         this.teclado = {};
 
+        this.debug = false;
+        this.debugContainer = document.getElementById('debug');
+        this.seleccionado;
+
         this.gravedad = { x: 0, y: 3 };
 
         this.personas = [];
@@ -35,6 +39,7 @@ class Juego {
 
         this.ponerFondo();
         this.ponerProtagonista();
+        this.poner_Personas(5);
 
         this.app.stage.sortableChildren = true;
 
@@ -47,6 +52,18 @@ class Juego {
         this.protagonista.update();
         ///renders
         this.protagonista.render();
+        for (let persona of this.personas) {
+            persona.update();
+            persona.render();
+        }
+        if (this.teclado["d"]) {
+            this.debug = !this.debug;
+            this.debugContainer.classList.toggle('hide')
+        }
+        if (this.debug && this.seleccionado && this.contadorDeFrame % 60 == 0) {
+            //borrar todo y crearlo de nuevo cada 60 frames no funciona, borra la foto cada vez
+            this.seleccionado.showInfo();
+        }
     }
 
     async ponerFondo() {
@@ -120,8 +137,20 @@ class Juego {
         this.containerPrincipal.addChild(this.protagonista.container);
     }
 
+    poner_Personas(cuantas) {
+        if (!this.fondo) return;
+        for (let i = 0; i < cuantas; i++) {
+            let x = Math.random() * this.fondo.width;
+            let y = Math.random() * this.fondo.height;
+            let persona = new Persona(x, y, this);
+            this.containerPrincipal.addChild(persona.container);
+            this.personas.push(persona);
+        }
+    }
+
     cuandoHaceClick(evento) {
-        // if (toqué un objeto interactivo o un espacio vacío) {
+        // caso según qué click!!
+        // después caso según dónde clickeó
         this.protagonista.destinoX = evento.x;
         this.protagonista.destinoY = evento.y;
         //guardar el objeto sobre el que se hizo click para accionar cuando llegue
