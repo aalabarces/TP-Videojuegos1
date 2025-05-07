@@ -71,7 +71,7 @@ class Juego {
         let textura = await PIXI.Assets.load("bg.png");
 
         // Crear el TilingSprite con la textura y dimensiones
-        this.fondo = new PIXI.TilingSprite(textura, this.ancho * 3, this.alto * 3);
+        this.fondo = new PIXI.TilingSprite(textura, this.ancho, this.alto);
 
         // Añadir al escenario
         this.containerPrincipal.addChild(this.fondo);

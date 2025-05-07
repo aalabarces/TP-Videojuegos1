@@ -2,14 +2,8 @@ class Persona extends Entidad {
     constructor(x, y, juego) {
         super(x, y, juego);
         this.spritesAnimados = {};
-        // this.nombre;
-        // this.apellido;
-        // this.email;
-        // this.genero;
-        // this.titulo;
-        // this.trabajo;
-        // this.frase;
-        // this.imagen;
+
+        this.compras = []; //array de objetos de compras
 
         this.crearContainer();
         this.cargarSpritesAnimados();
@@ -82,6 +76,12 @@ class Persona extends Entidad {
                 this.frase = data[i].catchphrase;
                 this.imagen = data[i].avatar;
             });
+        // this.prioridad = objetoRandom();
+        // this.listaDeCompras = crearListaDeCompras(); //array de objetos de compras
+        // this.listaDeCompras.forEach((compra) => {
+        //     compra.cantidad = Math.floor(Math.random() * 5) + 1; //cantidad random entre 1 y 5
+        // });
+        // this.plata = Math.floor(Math.random() * 1000) + 1; //plata random entre 1 y 1000
     }
 
     showInfo() {
