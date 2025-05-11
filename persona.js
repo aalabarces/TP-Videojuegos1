@@ -2,25 +2,29 @@ class Persona extends Entidad {
     constructor(x, y, juego) {
         super(x, y, juego);
         this.spritesAnimados = {};
+        this.CONSTANTE_DE_ESCALADO = 2;
 
         this.compras = []; //array de objetos de compras
 
         this.crearContainer();
-        this.cargarSpritesAnimados();
         this.crearPersonalidad();
+        this.cargarSpritesAnimados();
     }
 
     update() {
         super.update();
+        if (!this.destinoX && Math.random() < 0.1 && this.juego.contadorDeFrame % 60 == 0) {
+            this.destinoAlAzar();
+        }
     }
 
     render() {
+        if (!this.yaCargoElSprite) return;
         super.render();
     }
-
     async cargarSpritesAnimados() {
         //cargo el json
-        let texture = await PIXI.Assets.load("idle.png");
+        let texture = await PIXI.Assets.load("animaciones/Conejo.png");
 
         this.sprite = new PIXI.Sprite(texture)
         this.container.addChild(this.sprite)
@@ -28,11 +32,13 @@ class Persona extends Entidad {
         this.sprite.x = 100
         this.sprite.y = 100
         this.sprite.anchor.set(0.5, 1)
+        this.yaCargoElSprite = true;
     }
 
     // async cargarSpritesAnimados() {
     //     //cargo el json
-    //     let json = await PIXI.Assets.load("texture.json");
+    //     let sprite = this.queSprite(this.genero);
+    //     let json = await PIXI.Assets.load("./animaciones/texture.json");
 
     //     //recorro todas las animaciones q tiene
     //     for (let animacion of Object.keys(json.animations)) {
@@ -62,6 +68,13 @@ class Persona extends Entidad {
     //     this.yaCargoElSprite = true;
     // }
 
+    queSprite(genero) {
+        if (genero == "M") {
+            return "civil";
+        }
+        else return "taylor";
+    }
+
     crearPersonalidad() {
         fetch("./MOCK_DATA.json")
             .then((response) => response.json())
@@ -75,6 +88,7 @@ class Persona extends Entidad {
                 this.trabajo = data[i].job;
                 this.frase = data[i].catchphrase;
                 this.imagen = data[i].avatar;
+                this.velocidadMaxima = Math.floor(Math.random() * 5) + 1; //velocidad random entre 1 y 5
             });
         // this.prioridad = objetoRandom();
         // this.listaDeCompras = crearListaDeCompras(); //array de objetos de compras
@@ -94,6 +108,10 @@ class Persona extends Entidad {
         dc.innerHTML += `<div>Trabajo: ${this.trabajo}</div>`
         dc.innerHTML += `<div>Frase: ${this.frase}</div>`
         dc.innerHTML += `<img src="${this.imagen}"/>`
+    }
 
+    destinoAlAzar() {
+        this.destinoX = Math.floor(Math.random() * this.juego.ancho);
+        this.destinoY = Math.floor(Math.random() * this.juego.alto);
     }
 }

@@ -21,6 +21,7 @@ class Entidad {
         this.valorFriccion = 0.93;
 
         this.spritesAnimados = {};
+        this.CONSTANTE_DE_ESCALADO = 1;
         this.crearContainer();
     }
 
@@ -47,15 +48,15 @@ class Entidad {
     }
 
     render() {
-        if (!this.activo) { return }
+        if (!this.yaCargoElSprite) return;
         this.container.x = this.x;
         this.container.y = this.y;
 
-        // if (this.velX < 0) {
-        //     this.sprite.scale.x = -1;
-        // } else {
-        //     this.sprite.scale.x = 1;
-        // }
+        if (this.velX < 0) {
+            this.sprite.scale.x = -1 * this.CONSTANTE_DE_ESCALADO;
+        } else {
+            this.sprite.scale.x = 1 * this.CONSTANTE_DE_ESCALADO;
+        }
 
         this.container.zIndex = Math.floor(this.y);
     }
@@ -96,6 +97,10 @@ class Entidad {
         this.accY = 0;
     }
 
+    calcularVelocidadLineal() {
+        return Math.sqrt(this.velX * this.velX + this.velY * this.velY);
+    }
+
     limitarAceleracion() {
         let aceleracionLineal = Math.sqrt(this.accX ** 2 + this.accY ** 2);
         if (aceleracionLineal > this.accMax) {
@@ -117,9 +122,12 @@ class Entidad {
         if (distancia < this.velocidadMaxima) {
             this.x = x
             this.y = y
-            this.destinoX = null
-            this.destinoY = null
-            this.velX = 0
+            setTimeout(() => {
+                //un timeout para que no se pase
+                this.destinoX = null
+                this.destinoY = null
+                this.velX = 0
+            }, 1000);
         }
         else
             // ubica al pj hacia el objetivo

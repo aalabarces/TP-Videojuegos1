@@ -38,32 +38,34 @@ class Juego {
         this.app.stage.addChild(this.containerPrincipal);
 
         this.ponerFondo();
-        this.ponerProtagonista();
-        this.poner_Personas(5);
 
         this.app.stage.sortableChildren = true;
+    }
 
+    empezar() {
+        this.ponerProtagonista();
+        this.poner_Personas(5);
         this.app.ticker.add(() => this.gameLoop());
     }
 
     gameLoop() {
         this.contadorDeFrame++;
         this.moverCamara();
-        this.protagonista.update();
-        ///renders
-        this.protagonista.render();
+        this.actuarSegunTeclasPresionadas();
         for (let persona of this.personas) {
             persona.update();
-            persona.render();
         }
-        if (this.teclado["d"]) {
-            this.debug = !this.debug;
-            this.debugContainer.classList.toggle('hide')
-        }
+        this.protagonista.update();
+
         if (this.debug && this.seleccionado && this.contadorDeFrame % 60 == 0) {
             //borrar todo y crearlo de nuevo cada 60 frames no funciona, borra la foto cada vez
             this.seleccionado.showInfo();
         }
+
+        for (let persona of this.personas) {
+            persona.render();
+        }
+        this.protagonista.render();
     }
 
     async ponerFondo() {
@@ -71,10 +73,15 @@ class Juego {
         let textura = await PIXI.Assets.load("bg.png");
 
         // Crear el TilingSprite con la textura y dimensiones
-        this.fondo = new PIXI.TilingSprite(textura, this.ancho, this.alto);
+        // this.fondo = new PIXI.TilingSprite(textura, this.ancho, this.alto);
+        this.fondo = new PIXI.Sprite(textura);
+        this.fondo.width = this.ancho;
+        this.fondo.height = this.alto;
 
         // Añadir al escenario
         this.containerPrincipal.addChild(this.fondo);
+
+        this.empezar();
     }
 
     ponerEventListeners() {
@@ -150,9 +157,38 @@ class Juego {
 
     cuandoHaceClick(evento) {
         // caso según qué click!!
+        let objetoAca = this.objetoAca(evento.x, evento.y);
+        console.log(objetoAca);
         // después caso según dónde clickeó
         this.protagonista.destinoX = evento.x;
         this.protagonista.destinoY = evento.y;
         //guardar el objeto sobre el que se hizo click para accionar cuando llegue
+    }
+
+    objetoAca(x, y) {
+        const boundary = new PIXI.EventBoundary(this.app.stage);
+        return boundary.hitTest(x, y);
+    }
+
+    actuarSegunTeclasPresionadas() {
+        //d -> mostrar / ocultar debug
+        if (this.teclado["d"]) {
+            this.debug = !this.debug;
+            this.debugContainer.classList.toggle('hide')
+        }
+
+        if (this.teclado['b']) {
+            this.protagonista.cambiarSpriteAnimado('birra');
+        }
+        if (this.teclado['j']) {
+            this.protagonista.cambiarSpriteAnimado('jump');
+        }
+        if (this.teclado['p']) {
+            this.protagonista.cambiarSpriteAnimado('pucho');
+        }
+        if (this.teclado['w']) {
+            this.protagonista.cambiarSpriteAnimado('walk');
+        }
+
     }
 }
