@@ -6,7 +6,10 @@ class Supermercado {
         this.heladeras = [];
         this.cajas = [];
         this.productos = [];
+        this.clientes = [];
 
+        this.dinero = 0;
+        this.ventas = [];
     }
 
     update() {
@@ -15,6 +18,7 @@ class Supermercado {
         this.heladeras.forEach(heladera => heladera.update());
         this.cajas.forEach(caja => caja.update());
         this.productos.forEach(producto => producto.update());
+        this.juego.ui.dinero.text = this.dinero;
     }
 
     render() {
@@ -38,4 +42,21 @@ class Supermercado {
         this.cajas.push(caja);
     }
 
+    cobrar(venta) {
+        if (!venta) return;
+        for (let i = 0; i < venta.productos.length; i++) {
+            const producto = venta.productos[i];
+            const index = this.productos.indexOf(producto);
+            if (index != -1) {
+                this.productos.splice(index, 1);
+            }
+            venta.caja.reproducirAnimacion('cobrar');
+            venta.empleado.reproducirAnimacion('cobrar');
+        }
+        this.dinero += venta.total;
+        this.ventas.push(venta);
+    }
+    sumarPlata(x) {
+        this.dinero += x;
+    }
 }

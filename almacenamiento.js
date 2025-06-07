@@ -1,12 +1,13 @@
 class Almacenamiento extends Entidad {
     constructor(x, y, juego) {
         super(x, y, juego);
+        this.nombre = "almacenamiento";
         this.contenido = [];
         this.capacidad = 100; // Capacidad máxima del almacenamiento
         this.velocidadMaxima = 0; // Velocidad máxima del almacenamiento (no se mueve)
         this.accMax = 0; // Aceleración máxima del almacenamiento (no se mueve)
 
-        this.cargarSpritesAnimados(null);
+        this.cargarSprites();
     }
 
     agregarProducto(producto) {
@@ -43,17 +44,7 @@ class Almacenamiento extends Entidad {
         return this.pesoDelContenido() == this.capacidad;
     }
 
-    async cargarSpritesAnimados(sprite) {
-        //cargo el json
-        let texture = await PIXI.Assets.load(sprite);
 
-        this.sprite = new PIXI.Sprite(texture)
-        this.container.addChild(this.sprite)
-        this.sprite.scale.set(2);
-        this.sprite.x = 100
-        this.sprite.y = 100
-        this.sprite.anchor.set(0.5, 1)
-    }
 }
 
 class Estanteria extends Almacenamiento {
@@ -61,8 +52,18 @@ class Estanteria extends Almacenamiento {
     constructor(x, y, juego) {
         super(x, y, juego);
 
-        this.cargarSpritesAnimados("estanteria.png")
+    }
+    async cargarSprites() {
+        //cargo el json
+        let texture = await PIXI.Assets.load("assets/estante.png");
 
+        this.sprite = new PIXI.Sprite(texture)
+        this.container.addChild(this.sprite)
+        this.sprite.scale.set(0.1);
+        this.sprite.x = 500
+        this.sprite.y = 500
+        this.sprite.anchor.set(0.5, 1)
+        this.yaCargoElSprite = true;
     }
 
     refrigerada() {
@@ -74,7 +75,7 @@ class Heladera extends Almacenamiento {
     constructor(x, y, juego) {
         super(x, y, juego);
 
-        this.cargarSpritesAnimados("heladera.png")
+        this.cargarSprites("assets/heladera.png")
 
     }
 
@@ -102,7 +103,7 @@ class Carrito extends Almacenamiento {
         this.capacidad = 50; // Capacidad máxima del almacenamiento
         this.velocidadMaxima = 3; // Velocidad máxima del carrito
         this.accMax = 0.1; // Aceleración máxima del carrito
-        this.cargarSpritesAnimados("carrito.png")
+        this.cargarSprites("assets/carrito.png")
     }
 
     refrigerada() {

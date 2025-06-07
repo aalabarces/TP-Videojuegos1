@@ -16,6 +16,13 @@ class Juego {
         this.gravedad = { x: 0, y: 3 };
 
         this.personas = [];
+        this.productos = [];
+        this.almacenamientos = [];
+        this.cajas = [];
+        this.protagonista = null;
+
+        this.grilla = new Grilla(this, 100);
+        this.supermercado = new Supermercado(this);
 
         this.app
             .init({ width: this.ancho, height: this.alto, background: "#ffffff" })
@@ -40,11 +47,16 @@ class Juego {
         this.ponerFondo();
 
         this.app.stage.sortableChildren = true;
+
+        this.crearUI();
     }
 
     empezar() {
         this.ponerProtagonista();
         this.poner_Personas(5);
+        this.ponerCaja();
+        this.ponerEstante();
+        this.ponerCarne();
         this.app.ticker.add(() => this.gameLoop());
     }
 
@@ -66,6 +78,7 @@ class Juego {
             persona.render();
         }
         this.protagonista.render();
+        this.ui.dinero.text = this.supermercado.dinero;
     }
 
     async ponerFondo() {
@@ -149,25 +162,50 @@ class Juego {
         for (let i = 0; i < cuantas; i++) {
             let x = Math.random() * this.fondo.width;
             let y = Math.random() * this.fondo.height;
-            let persona = new Persona(x, y, this);
+            let persona = new Cliente(x, y, this);
             this.containerPrincipal.addChild(persona.container);
             this.personas.push(persona);
         }
     }
 
+    ponerCaja() {
+        let caja = new Caja(300, 300, this);
+        this.containerPrincipal.addChild(caja.container);
+        this.cajas.push(caja);
+    }
+
+    ponerEstante() {
+        let estante = new Estanteria(200, 200, this);
+        this.containerPrincipal.addChild(estante.container);
+        this.almacenamientos.push(estante);
+    }
+
+    ponerCarne() {
+        let carne = new Producto(100, 100, this, 'carne');
+        this.containerPrincipal.addChild(carne.container);
+        this.productos.push(carne);
+    }
+
+    entidadesAca(x, y) {
+        let array = [];
+        let celda = this.grilla.obtenerCeldaEnPosicion(x, y);
+        for (let i = 0; i < celda.entidadesAca.length; i++) {
+            if (celda.entidadesAca[i].x == x && celda.entidadesAca[i].y == y) {
+                array.push(celda.entidadesAca[i])
+            }
+        }
+        console.log("entidadesAca", array, celda);
+        return array;
+    }
+
     cuandoHaceClick(evento) {
         // caso según qué click!!
-        let objetoAca = this.objetoAca(evento.x, evento.y);
-        console.log(objetoAca);
+        const ent = this.entidadesAca(evento.x, evento.y);
+        ent.forEach(entidad => entidad.serClickeado());
         // después caso según dónde clickeó
         this.protagonista.destinoX = evento.x;
         this.protagonista.destinoY = evento.y;
         //guardar el objeto sobre el que se hizo click para accionar cuando llegue
-    }
-
-    objetoAca(x, y) {
-        const boundary = new PIXI.EventBoundary(this.app.stage);
-        return boundary.hitTest(x, y);
     }
 
     actuarSegunTeclasPresionadas() {
@@ -190,5 +228,42 @@ class Juego {
             this.protagonista.cambiarSpriteAnimado('walk');
         }
 
+    }
+
+    crearUI() {
+        const ui = new PIXI.Container();
+        ui.name = "ui";
+        ui.zIndex = 1000;
+        this.app.stage.addChild(ui);
+        this.ui = ui;
+
+        this.crearBoxDeDatos();
+    }
+
+    crearBoxDeDatos() {
+        const box = new PIXI.Graphics();
+        box.beginFill(0x000000, 0.5);
+        box.drawRect(0, 0, 200, 100);
+        box.endFill();
+        box.x = this.ancho - 210;
+        box.y = this.alto - 110;
+        this.ui.addChild(box);
+
+        const texto = new PIXI.Text("Dinero:", { fontSize: 16, fill: 0xffffff });
+        texto.x = this.ancho - 200;
+        texto.y = this.alto - 100;
+        this.ui.addChild(texto);
+
+        const dinero = new PIXI.Text("0", { fontSize: 16, fill: 0xffffff });
+        dinero.x = this.ancho - 200;
+        dinero.y = this.alto - 80;
+        this.ui.addChild(dinero);
+        this.ui.dinero = dinero;
+    }
+
+    calcularDistancia(punto1, punto2) {
+        const dx = punto2.x - punto1.x;
+        const dy = punto2.y - punto1.y;
+        return Math.sqrt(dx * dx + dy * dy);
     }
 }

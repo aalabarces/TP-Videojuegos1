@@ -58,9 +58,9 @@ class Protagonista extends Persona {
         }
     }
 
-    async cargarSpritesAnimados() {
+    async cargarSprites() {
         //cargo el json
-        let json = await PIXI.Assets.load("./animaciones/boca/boca-sheet2.json");
+        let json = await PIXI.Assets.load("./assets/boca/boca-sheet2.json");
 
         //recorro todas las animaciones q tiene
         for (let animacion of Object.keys(json.animations)) {

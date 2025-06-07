@@ -4,27 +4,25 @@ class Persona extends Entidad {
         this.spritesAnimados = {};
         this.CONSTANTE_DE_ESCALADO = 2;
 
-        this.compras = []; //array de objetos de compras
-
         this.crearContainer();
         this.crearPersonalidad();
-        this.cargarSpritesAnimados();
+        this.cargarSprites();
     }
 
     update() {
         super.update();
-        if (!this.destinoX && Math.random() < 0.1 && this.juego.contadorDeFrame % 60 == 0) {
-            this.destinoAlAzar();
-        }
+        // if (!this.destinoX && Math.random() < 0.1 && this.juego.contadorDeFrame % 60 == 0) {
+        //     this.destinoAlAzar();
+        // }
     }
 
     render() {
         if (!this.yaCargoElSprite) return;
         super.render();
     }
-    async cargarSpritesAnimados() {
+    async cargarSprites() {
         //cargo el json
-        let texture = await PIXI.Assets.load("animaciones/Conejo.png");
+        let texture = await PIXI.Assets.load("assets/Conejo.png");
 
         this.sprite = new PIXI.Sprite(texture)
         this.container.addChild(this.sprite)
@@ -90,12 +88,13 @@ class Persona extends Entidad {
                 this.imagen = data[i].avatar;
                 this.velocidadMaxima = Math.floor(Math.random() * 5) + 1; //velocidad random entre 1 y 5
             });
-        // this.prioridad = objetoRandom();
-        // this.listaDeCompras = crearListaDeCompras(); //array de objetos de compras
-        // this.listaDeCompras.forEach((compra) => {
-        //     compra.cantidad = Math.floor(Math.random() * 5) + 1; //cantidad random entre 1 y 5
-        // });
-        // this.plata = Math.floor(Math.random() * 1000) + 1; //plata random entre 1 y 1000
+
+        //todos estos podrían tener un multiplicador/divisor por nivel. mientras más avanzado, menos pacientes, más autocontrolados
+        this.plata = Math.floor(Math.random() * 1000) + 1; //plata random entre 1 y 1000
+        this.paciencia = Math.floor(Math.random() * 100) + 1; //paciencia random entre 1 y 100
+        // this.tentacion = Math.floor(Math.random() * 100) + 1; //tentacion random entre 1 y 100
+        // this.autocontrol = Math.floor(Math.random() * 100) + 1; //autocontrol random entre 1 y 100
+
     }
 
     showInfo() {
@@ -113,5 +112,26 @@ class Persona extends Entidad {
     destinoAlAzar() {
         this.destinoX = Math.floor(Math.random() * this.juego.ancho);
         this.destinoY = Math.floor(Math.random() * this.juego.alto);
+    }
+
+    self() {
+        let self = {
+            'x': this.x,
+            'y': this.y,
+            'nombre': this.nombre,
+            'apellido': this.apellido,
+            'email': this.email,
+            'genero': this.genero,
+            'titulo': this.titulo,
+            'trabajo': this.trabajo,
+            'frase': this.frase,
+            'imagen': this.imagen,
+            'velocidadMaxima': this.velocidadMaxima,
+            'plata': this.plata,
+            'paciencia': this.paciencia,
+            'container': this.container,
+            'sprite': this.sprite,
+        }
+        return self;
     }
 }

@@ -33,6 +33,8 @@ class Entidad {
             this.showInfo();
             this.juego.seleccionado = this;
         });
+        this.container.x = this.x;
+        this.container.y = this.y;
 
         this.juego.containerPrincipal.addChild(this.container);
     }
@@ -45,6 +47,8 @@ class Entidad {
         }
 
         this.calcularVelocidad();
+
+        this.actualizarMiPosicionEnLaGrilla();
     }
 
     render() {
@@ -60,6 +64,7 @@ class Entidad {
 
         this.container.zIndex = Math.floor(this.y);
     }
+
 
     aplicarAceleracion(x, y) {
         this.accX += x;
@@ -89,8 +94,8 @@ class Entidad {
         if (this.velX < -this.velocidadMaxima) { this.velX = -this.velocidadMaxima; }
         if (this.velY < -this.velocidadMaxima) { this.velY = -this.velocidadMaxima; }
 
-        this.x += this.velX;
-        this.y += this.velY;
+        this.x += Math.floor(this.velX);
+        this.y += Math.floor(this.velY);
 
         // Resetear aceleración
         this.accX = 0;
@@ -115,6 +120,7 @@ class Entidad {
 
     irA(x, y) {
         //calcula la direccion y distancia al click
+
         const dx = x - this.x;
         const dy = y - this.y;
         const distancia = Math.sqrt(dx * dx + dy * dy);
@@ -138,6 +144,10 @@ class Entidad {
         return this.destinoX !== null && this.destinoY !== null;
     }
 
+    serClickeado() {
+        this.juego.seleccionado = this;
+    }
+
     showInfo() {
         //appendear mi data en el debugContainer
         console.log("Soy una entidad con id:", this.id);
@@ -155,5 +165,19 @@ class Entidad {
         dc.innerHTML += `<div>activo: ${this.activo}</div>`
         dc.innerHTML += `<div>velocidadMaxima: ${this.velocidadMaxima}</div>`
         dc.innerHTML += `<div>accMax: ${this.accMax}</div>`
+    }
+
+    actualizarMiPosicionEnLaGrilla() {
+        const celdaActual = this.juego.grilla.obtenerCeldaEnPosicion(
+            Math.floor(this.x),
+            Math.floor(this.y)
+        );
+        if (this.celda && celdaActual && celdaActual != this.celda) {
+            this.celda.sacarEntidad(this);
+            celdaActual.ponerEntidad(this);
+            this.celda = celdaActual;
+        } else if (!this.celda && celdaActual) {
+            this.celda = celdaActual;
+        }
     }
 }
