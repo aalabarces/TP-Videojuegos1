@@ -10,6 +10,8 @@ class Supermercado {
 
         this.dinero = 0;
         this.ventas = [];
+
+        this.sprites = {};
     }
 
     update() {
@@ -58,5 +60,35 @@ class Supermercado {
     }
     sumarPlata(x) {
         this.dinero += x;
+    }
+
+    crearSupermercado() {
+        let x = 5; // ESQUINA TOP LEFT
+        let y = 5; // ESQUINA TOP LEFT
+        let ancho = this.juego.ancho - 10; // MARGEN DE 5 PIXELES
+        let alto = this.juego.alto - 10; // MARGEN DE 5 PIXELES
+        for (let i = x + 1; i < ancho; i++) {   // desde esquina superior izquierda hasta esquina superior derecha
+            const celda = this.juego.grilla.obtenerCeldaEnPosicion(i, y);
+            // celda.sprite = this.sprites['pared_top'];
+            celda.sprite = this.sprites['pared'];
+        }
+        for (let i = x + 1; i < ancho; i++) {   // desde esquina inferior izquierda hasta esquina inferior derecha
+            const celda = this.juego.grilla.obtenerCeldaEnPosicion(i, alto);
+            // celda.sprite = this.sprites['pared_bottom'];
+            celda.sprite = this.sprites['pared'];
+        }
+        for (let i = y + 1; i < alto; i++) {   // desde esquina superior izquierda hasta esquina inferior izquierda
+            const celda = this.juego.grilla.obtenerCeldaEnPosicion(x, i);
+            // celda.sprite = this.sprites['pared_left'];
+            celda.sprite = this.sprites['pared'];
+        }
+        for (let i = y + 1; i < alto; i++) {   // desde esquina superior derecha hasta esquina inferior derecha
+            const celda = this.juego.grilla.obtenerCeldaEnPosicion(ancho, i);
+            // celda.sprite = this.sprites['pared_right'];
+            celda.sprite = this.sprites['pared'];
+        }
+        // PONER PUERTA
+        const puerta = this.juego.grilla.obtenerCeldaEnPosicion(x + 2, y);
+        puerta.sprite = this.sprites['puerta'];
     }
 }

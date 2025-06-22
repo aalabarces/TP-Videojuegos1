@@ -52,6 +52,8 @@ class Estanteria extends Almacenamiento {
     constructor(x, y, juego) {
         super(x, y, juego);
 
+        this.container.name = "estanteria";
+
     }
     async cargarSprites() {
         //cargo el json
@@ -59,7 +61,7 @@ class Estanteria extends Almacenamiento {
 
         this.sprite = new PIXI.Sprite(texture)
         this.container.addChild(this.sprite)
-        this.sprite.scale.set(0.1);
+        this.sprite.scale.set(1);
         this.sprite.x = 500
         this.sprite.y = 500
         this.sprite.anchor.set(0.5, 1)

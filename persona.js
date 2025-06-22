@@ -97,41 +97,25 @@ class Persona extends Entidad {
 
     }
 
-    showInfo() {
-        super.showInfo();
-        const dc = this.juego.debugContainer    //DebugContainer
-        dc.innerHTML += `<div class="separador"></div>`
-        dc.innerHTML += `<div>Nombre: ${this.titulo} ${this.nombre} ${this.apellido}</div>`
-        dc.innerHTML += `<div>Email: ${this.email}</div>`
-        dc.innerHTML += `<div>Genero: ${this.genero}</div>`
-        dc.innerHTML += `<div>Trabajo: ${this.trabajo}</div>`
-        dc.innerHTML += `<div>Frase: ${this.frase}</div>`
-        dc.innerHTML += `<img src="${this.imagen}"/>`
-    }
-
     destinoAlAzar() {
         this.destinoX = Math.floor(Math.random() * this.juego.ancho);
         this.destinoY = Math.floor(Math.random() * this.juego.alto);
     }
 
-    self() {
-        let self = {
-            'x': this.x,
-            'y': this.y,
-            'nombre': this.nombre,
-            'apellido': this.apellido,
-            'email': this.email,
-            'genero': this.genero,
-            'titulo': this.titulo,
-            'trabajo': this.trabajo,
-            'frase': this.frase,
-            'imagen': this.imagen,
-            'velocidadMaxima': this.velocidadMaxima,
-            'plata': this.plata,
-            'paciencia': this.paciencia,
-            'container': this.container,
-            'sprite': this.sprite,
+    miData() {
+        return {
+            ...super.miData(),
+            nombre: this.nombre,
+            apellido: this.apellido,
+            email: this.email,
+            genero: this.genero,
+            titulo: this.titulo,
+            trabajo: this.trabajo,
+            frase: this.frase,
+            imagen: this.imagen,
+            plata: this.plata,
+            paciencia: this.paciencia,
+            sprite: this.sprite,
         }
-        return self;
     }
 }

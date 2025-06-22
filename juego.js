@@ -16,13 +16,10 @@ class Juego {
         this.gravedad = { x: 0, y: 3 };
 
         this.personas = [];
-        this.productos = [];
-        this.almacenamientos = [];
-        this.cajas = [];
         this.protagonista = null;
 
-        this.grilla = new Grilla(this, 100);
         this.supermercado = new Supermercado(this);
+        this.PLATA_INICIAL = 1000;
 
         this.app
             .init({ width: this.ancho, height: this.alto, background: "#ffffff" })
@@ -31,7 +28,7 @@ class Juego {
             });
     }
 
-    pixiListo() {
+    async pixiListo() {
         console.log("pixi listo");
 
         document.body.appendChild(this.app.canvas);
@@ -41,17 +38,21 @@ class Juego {
         window.__PIXI_APP__ = this.app;
 
         this.containerPrincipal = new PIXI.Container();
-        this.containerPrincipal.name = "el container principal";
+        this.containerPrincipal.name = "container_principal";
         this.app.stage.addChild(this.containerPrincipal);
 
-        this.ponerFondo();
+        this.grilla = new Grilla(this, 100);
 
         this.app.stage.sortableChildren = true;
 
+        await this.ponerFondo();
+
         this.crearUI();
+        this.empezar();
     }
 
     empezar() {
+        console.log("empezando juego");
         this.ponerProtagonista();
         this.poner_Personas(5);
         this.ponerCaja();
@@ -62,11 +63,21 @@ class Juego {
 
     gameLoop() {
         this.contadorDeFrame++;
-        this.moverCamara();
+        // this.moverCamara();
         this.actuarSegunTeclasPresionadas();
         for (let persona of this.personas) {
             persona.update();
         }
+        for (let producto of this.supermercado.productos) {
+            producto.update();
+        }
+        for (let almacen of this.supermercado.estanterias) {
+            almacen.update();
+        }
+        for (let caja of this.supermercado.cajas) {
+            caja.update();
+        }
+
         this.protagonista.update();
 
         if (this.debug && this.seleccionado && this.contadorDeFrame % 60 == 0) {
@@ -90,11 +101,10 @@ class Juego {
         this.fondo = new PIXI.Sprite(textura);
         this.fondo.width = this.ancho;
         this.fondo.height = this.alto;
+        this.fondo.zIndex = -1000; // Asegurarse de que el fondo esté detrás de todo
 
         // Añadir al escenario
         this.containerPrincipal.addChild(this.fondo);
-
-        this.empezar();
     }
 
     ponerEventListeners() {
@@ -122,35 +132,35 @@ class Juego {
         this.mouse.y = evento.y;
     }
 
-    moverCamara() {
-        if (!this.fondo) return;
-        if (!this.protagonista) return;
-        if (!this.containerPrincipal) return;
-        // this.containerPrincipal.x = this.protagonista.x;
-        // this.containerPrincipal.y = this.protagonista.y;
+    // moverCamara() {
+    //     if (!this.fondo) return;
+    //     if (!this.protagonista) return;
+    //     if (!this.containerPrincipal) return;
+    //     // this.containerPrincipal.x = this.protagonista.x;
+    //     // this.containerPrincipal.y = this.protagonista.y;
 
-        const cuanto = 0.033333;
+    //     const cuanto = 0.033333;
 
-        const valorFinalX = -this.protagonista.x + this.ancho / 2;
-        const valorFinalY = -this.protagonista.y + this.alto / 2;
+    //     const valorFinalX = -this.protagonista.x + this.ancho / 2;
+    //     const valorFinalY = -this.protagonista.y + this.alto / 2;
 
-        this.containerPrincipal.x -=
-            (this.containerPrincipal.x - valorFinalX) * cuanto;
-        this.containerPrincipal.y -=
-            (this.containerPrincipal.y - valorFinalY) * cuanto;
+    //     this.containerPrincipal.x -=
+    //         (this.containerPrincipal.x - valorFinalX) * cuanto;
+    //     this.containerPrincipal.y -=
+    //         (this.containerPrincipal.y - valorFinalY) * cuanto;
 
-        if (this.containerPrincipal.x > 0) this.containerPrincipal.x = 0;
-        if (this.containerPrincipal.y > 0) this.containerPrincipal.y = 0;
+    //     if (this.containerPrincipal.x > 0) this.containerPrincipal.x = 0;
+    //     if (this.containerPrincipal.y > 0) this.containerPrincipal.y = 0;
 
-        //limite derecho
-        if (this.containerPrincipal.x < -this.fondo.width + this.ancho) {
-            this.containerPrincipal.x = -this.fondo.width + this.ancho;
-        }
+    //     //limite derecho
+    //     if (this.containerPrincipal.x < -this.fondo.width + this.ancho) {
+    //         this.containerPrincipal.x = -this.fondo.width + this.ancho;
+    //     }
 
-        if (this.containerPrincipal.y < -this.fondo.height + this.alto) {
-            this.containerPrincipal.y = -this.fondo.height + this.alto;
-        }
-    }
+    //     if (this.containerPrincipal.y < -this.fondo.height + this.alto) {
+    //         this.containerPrincipal.y = -this.fondo.height + this.alto;
+    //     }
+    // }
 
     ponerProtagonista() {
         this.protagonista = new Protagonista(500, 500, this);
@@ -171,19 +181,19 @@ class Juego {
     ponerCaja() {
         let caja = new Caja(300, 300, this);
         this.containerPrincipal.addChild(caja.container);
-        this.cajas.push(caja);
+        this.supermercado.cajas.push(caja);
     }
 
     ponerEstante() {
         let estante = new Estanteria(200, 200, this);
         this.containerPrincipal.addChild(estante.container);
-        this.almacenamientos.push(estante);
+        this.supermercado.estanterias.push(estante);
     }
 
     ponerCarne() {
         let carne = new Producto(100, 100, this, 'carne');
         this.containerPrincipal.addChild(carne.container);
-        this.productos.push(carne);
+        this.supermercado.productos.push(carne);
     }
 
     entidadesAca(x, y) {
@@ -231,16 +241,18 @@ class Juego {
     }
 
     crearUI() {
+        // Crear un contenedor para la UI
         const ui = new PIXI.Container();
         ui.name = "ui";
         ui.zIndex = 1000;
-        this.app.stage.addChild(ui);
+        this.containerPrincipal.addChild(ui);
         this.ui = ui;
 
         this.crearBoxDeDatos();
     }
 
     crearBoxDeDatos() {
+        // Crear un box con datos para la UI
         const box = new PIXI.Graphics();
         box.beginFill(0x000000, 0.5);
         box.drawRect(0, 0, 200, 100);

@@ -25,13 +25,14 @@ class Cliente extends Persona {
         //tendrían que escalar según cantidad de veces que pasó (enojarse, tentarse)
 
 
-        this.compras = ['carne']; //array de objetos de compras
+        this.compras = ['carne']; //array de objetos de lista de compras
         // this.llenarListaDeCompras();
+        this.carrito = []; //array de objetos que el cliente tiene en su carrito
         this.yaPague = false;
-        this.plata = 0; // dinero que tiene el cliente
+        this.plata = 0;
 
-
-
+        this.objetivo = null; // el producto que quiere comprar
+        this.pasillosTransitados = 0;
 
     }
 
@@ -43,7 +44,6 @@ class Cliente extends Persona {
                 this.compras.push(producto);
             }
         }
-        this.estado = Cliente.STATES.buscando;
     }
 
     finiteStateMachine() {
@@ -52,33 +52,29 @@ class Cliente extends Persona {
         }
         else {
             if (this.compras.length > 0) {
-                this.estado = Cliente.STATES.comprando;
+                if (this.estoyAlLadoDelProductoQueQuiero()) {
+                    this.estado = Cliente.STATES.agarrando;
+                }
+                else {
+                    this.estado = Cliente.STATES.comprando;
+                }
             } else {
                 this.estado = Cliente.STATES.pagando;
             }
         }
     }
 
-    comprando() {
-        if (this.estoyAlLadoDelProductoQueQuiero()) {
-            this.estado = Cliente.STATES.agarrando;
-        }
-        else {
-            this.estado = Cliente.STATES.buscando;
-        }
-    }
 
-    buscando() {
-        // console.log("Buscando producto:", this.compras[0]);
-        // if (this.veoAlgoQueMeTienta() && this.tentacion > this.autocontrol * this.MULTIPLICADOR_DE_AUTOCONTROL) {
-        //     this.estado = Cliente.STATES.tentado;
-        // }
-        /*else*/ if (this.hayProducto(this.compras[0])) {
-            this.estado = Cliente.STATES.comprando;
-        }
+    // entra, busca todos, va al mas cerca
+    // objetos conocidos: ya sabe dónde están algunas cosas
+
+    // guardar por qué celdas pasó, que busque la celda más cercana por la que no y vaya hasta que no haya celdas o ya tenga todas las cosas
+
+    comprando() {
+        // si no hay objetivo, buscá el primero de la lista. si hay, ir
+        if (!this.objetivo) { this.objetivo = this.buscarProducto(this.compras[0]) }
         else {
-            this.enojo += MULTIPLICADOR_DE_ENOJO;
-            this.quitarProducto(this.compras[0]); //sacar de la lista
+            this.irA(this.objetivo.x, this.objetivo.y);
         }
     }
 
@@ -92,7 +88,7 @@ class Cliente extends Persona {
     }
 
     agarrando() {
-        this.agregarProducto(this.buscarProducto(this.compras[0]));
+        this.agregarProducto(this.objetivo);
         this.quitarProducto(this.compras[0]);
     }
 
@@ -108,9 +104,6 @@ class Cliente extends Persona {
             case Cliente.STATES.saliendo:
                 this.saliendo();
                 break;
-            case Cliente.STATES.buscando:
-                this.buscando();
-                break;
             case Cliente.STATES.agarrando:
                 this.agarrando();
                 break;
@@ -125,7 +118,7 @@ class Cliente extends Persona {
 
 
     agregarProducto(producto) {
-        this.compras.push(producto);
+        this.carrito.push(producto);
     }
 
     quitarProducto(producto) {
@@ -137,7 +130,20 @@ class Cliente extends Persona {
 
     buscarProducto(producto) {
         // console.log(this.juego.grilla.obtenerCeldaEnPosicion(this.x, this.y))
-        return this.juego.grilla.obtenerCeldaEnPosicion(this.x, this.y).buscarProducto(producto);
+        const productoCerca = this.celda.buscarProducto(producto);
+        if (productoCerca) {
+            return this.objetivo;
+        }
+        else {
+            // si no está en la celdas vecinas, no lo busca más. cómo hacer que "deambule"?
+            if (this.celda.siguienteCeldaEnElCamino()) {
+                this.irA(this.celda.siguienteCeldaEnElCamino().x, this.celda.siguienteCeldaEnElCamino().y);
+            }
+            else {
+                this.enojo += this.MULTIPLICADOR_DE_ENOJO;
+                this.quitarProducto(this.compras[0]); //sacar de la lista
+            }
+        }
     }
 
     hayProducto(producto) {
@@ -158,21 +164,35 @@ class Cliente extends Persona {
     }
 
     estoyAlLadoDelProductoQueQuiero() {
-        let producto = this.buscarProducto(this.compras[0]);
+        // devuelve si la distancia al producto que quiero es menor a DISTANCIA_DE_ACCION
         // console.log("Producto buscado:", producto);
-        if (producto) {
-            let distancia = this.juego.calcularDistancia(producto.x, producto.y);
-            return distancia < 5;
+        if (this.objetivo) {
+            let distancia = this.juego.calcularDistancia(producto, this);
+            return distancia < this.DISTANCIA_DE_ACCION;
         }
         return false;
     }
 
     estoyAlLadoDeLaCaja() {
-        if (this.juego.caja) {
-            let distancia = this.juego.calcularDistancia(this.juego.caja.x, this.juego.caja.y);
-            return distancia < 5;
+        if (this.juego.caja) {  // tendría que ser this.juego.supermercado.caja?
+            let distancia = this.juego.calcularDistancia(this.juego.caja, this);
+            return distancia < this.DISTANCIA_DE_ACCION;
         }
         return false;
+    }
+
+    miData() {
+        return {
+            ...super.miData(),
+            estado: this.estado,
+            compras: this.compras,
+            carrito: this.carrito,
+            yaPague: this.yaPague,
+            plata: this.plata,
+            objetivo: this.objetivo,
+            paciencia: this.paciencia,
+            enojo: this.enojo
+        };
     }
 }
 
@@ -204,6 +224,9 @@ pagando {
     if estoy al lado { pagar }
     else { yendo a caja }
 }
+
+
+
 
 
 */

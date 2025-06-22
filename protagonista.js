@@ -5,7 +5,7 @@ class Protagonista extends Persona {
         this.container.name = "protagonista";
 
         // this.container.tint = 0xc915ee;
-        this.velocidadMaxima = 3;
+        this.velocidadMaxima = 5;
         this.accMax = 0.33;
         this.valorFriccion = 0.95;
 
@@ -118,5 +118,23 @@ class Protagonista extends Persona {
     }
     cambiarVelocidadDelSpriteSegunVelocidadLineal() {
         this.sprite.animationSpeed = this.calcularVelocidadLineal() * 0.13;
+    }
+
+    crearPersonalidad() {
+        // sobreescribe la función random de Persona
+        this.nombre = "Protagonista";
+        this.apellido = "Que en algún momento tendrá un nombre customizable";
+        this.email = "varNombre[0] + varApellido + '@ejemplo.com'";
+        this.genero = "input";
+        this.titulo = "El único e incomparable";
+        this.trabajo = "Dueño del minisuper";
+        this.frase = "<select>";
+        this.imagen = "<img src='https://www.google.com/url?sa=i&url=https%3A%2F%2Fdisco-elysium-archive.fandom.com%2Fwiki%2FHarrier_Du_Bois&psig=AOvVaw2gJ1qgNKKMAEN-LxE_PWUf&ust=1750712086483000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCICrxe_0hY4DFQAAAAAdAAAAABAE' alt='Protagonista'>";
+        this.velocidadMaxima = 5; //velocidad random entre 1 y 5
+        this.plata = this.juego.PLATA_INICIAL; //plata random entre 1 y 1000
+        this.paciencia = 100; //paciencia random entre 1 y 100
+        this.tentacion = 1; //tentacion random entre 1 y 100
+        this.autocontrol = 100; //autocontrol random entre 1 y 100
+
     }
 }

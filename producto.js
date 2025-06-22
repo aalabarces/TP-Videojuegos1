@@ -2,6 +2,8 @@ class Producto extends Entidad {
     constructor(x, y, juego, tipo) {
         super(x, y, juego);
 
+        this.container.name = "producto";
+
         this.tipo = tipo || listaProductos[Math.floor(Math.random() * listaProductos.length)];
         this.precio = productos[tipo].precio;
         this.peso = productos[tipo].peso;
@@ -11,7 +13,6 @@ class Producto extends Entidad {
 
         this.CONSTANTE_DE_ESCALADO = 0.05
         this.spritesAnimados = {};
-        this.crearContainer();
         this.cargarSprites();
     }
 

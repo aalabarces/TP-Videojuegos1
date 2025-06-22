@@ -22,6 +22,9 @@ class Entidad {
 
         this.spritesAnimados = {};
         this.CONSTANTE_DE_ESCALADO = 1;
+        this.DISTANCIA_DE_ACCION = 5;
+
+        this.celda = null;
         this.crearContainer();
     }
 
@@ -97,6 +100,11 @@ class Entidad {
         this.x += Math.floor(this.velX);
         this.y += Math.floor(this.velY);
 
+        if (this.x < 0) { this.x = 0; }
+        if (this.y < 0) { this.y = 0; }
+        if (this.x > this.juego.ancho) { this.x = this.juego.ancho; }
+        if (this.y > this.juego.alto) { this.y = this.juego.alto; }
+
         // Resetear aceleración
         this.accX = 0;
         this.accY = 0;
@@ -167,6 +175,24 @@ class Entidad {
         dc.innerHTML += `<div>accMax: ${this.accMax}</div>`
     }
 
+    miData() {
+        return {
+            id: this.id,
+            x: this.x,
+            y: this.y,
+            container: this.container,
+            velX: this.velX,
+            velY: this.velY,
+            accX: this.accX,
+            accY: this.accY,
+            destinoX: this.destinoX,
+            destinoY: this.destinoY,
+            activo: this.activo,
+            velocidadMaxima: this.velocidadMaxima,
+            accMax: this.accMax
+        };
+    }
+
     actualizarMiPosicionEnLaGrilla() {
         const celdaActual = this.juego.grilla.obtenerCeldaEnPosicion(
             Math.floor(this.x),
@@ -178,6 +204,7 @@ class Entidad {
             this.celda = celdaActual;
         } else if (!this.celda && celdaActual) {
             this.celda = celdaActual;
+            this.celda.ponerEntidad(this);
         }
     }
 }

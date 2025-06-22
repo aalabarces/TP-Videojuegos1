@@ -4,9 +4,18 @@ class Celda {
         this.anchoCelda = anchoCelda;
         this.x = x;
         this.y = y;
-
+        this.crearContainer();
         this.entidadesAca = [];
         this.celdasVecinas = [];
+        this.crearBorde();
+    }
+
+    crearContainer() {
+        this.container = new PIXI.Container();
+        this.container.name = "celda";
+        this.container.x = this.x * this.anchoCelda;
+        this.container.y = this.y * this.anchoCelda;
+        this.juego.grilla.container.addChild(this.container);
     }
 
     ponerEntidad(quien) {
@@ -68,17 +77,36 @@ class Celda {
     }
 
     buscarProducto(producto) {
-        // devuelve el almacenamiento que tiene el producto
+        // devuelve el producto
         // o undefined si no hay ninguno
+
         let entidadesCerca = this.obtenerEntidadesAcaYEnCeldasVecinas();
         for (let i = 0; i < entidadesCerca.length; i++) {
             const entidad = entidadesCerca[i];
-            if (entidad.nombre == "almacenamiento") {
-                if (entidad.hayProducto(producto)) {
-                    return entidad;
-                }
+            if (entidad.container.name == "producto" && entidad.tipo == producto) {
+                return entidad;
             }
         }
-        return undefined;
+        return null;
+    }
+
+
+    siguienteCeldaEnElCamino() {
+        // devuelve la siguiente celda en el camino
+        // o undefined si no hay camino
+
+        return this.juego.grilla.obtenerCeldaEnPosicion(this.x + this.anchoCelda, this.y) ||
+            this.juego.grilla.obtenerCeldaEnPosicion(this.x - this.anchoCelda, this.y) ||
+            this.juego.grilla.obtenerCeldaEnPosicion(this.x, this.y + this.anchoCelda) ||
+            this.juego.grilla.obtenerCeldaEnPosicion(this.x, this.y - this.anchoCelda);
+    }
+
+    crearBorde() {
+        // Agregamos un borde rojo para debug
+        const borde = new PIXI.Graphics();
+        borde.lineStyle(1, 0xFF0000);
+        borde.drawRect(0, 0, this.anchoCelda, this.anchoCelda);
+        borde.zIndex = 10000;
+        this.container.addChild(borde);
     }
 }

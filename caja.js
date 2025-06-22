@@ -1,7 +1,7 @@
 class Caja extends Entidad {
     constructor(x, y, juego) {
         super(x, y, juego);
-        this.nombre = "caja";
+        this.container.name = "caja";
         this.fila = [];
 
         this.cargarSprites();
@@ -13,7 +13,7 @@ class Caja extends Entidad {
 
         this.sprite = new PIXI.Sprite(texture)
         this.container.addChild(this.sprite)
-        this.sprite.scale.set(0.1);
+        this.sprite.scale.set(1);
         this.sprite.x = 100
         this.sprite.y = 100
         this.sprite.anchor.set(0.5, 1)

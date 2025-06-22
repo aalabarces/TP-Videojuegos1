@@ -2,15 +2,24 @@ class Grilla {
     constructor(juego, anchoCelda) {
         this.juego = juego;
         this.anchoCelda = anchoCelda;
-        this.celdaALoAncho = Math.ceil(this.juego.ancho / this.anchoCelda) * 2;
-        this.celdaALoAlto = Math.ceil(this.juego.alto / this.anchoCelda) * 2;
+        this.celdaALoAncho = Math.ceil(this.juego.ancho / this.anchoCelda);
+        this.celdaALoAlto = Math.ceil(this.juego.alto / this.anchoCelda);
 
         this.celdas = {};
 
         this.initGrilla();
     }
 
-    initGrilla() {
+    crearContainer() {
+        this.container = new PIXI.Container();
+        this.container.name = "grilla";
+        this.container.x = 0;
+        this.container.y = 0;
+        this.juego.containerPrincipal.addChild(this.container);
+    }
+
+    async initGrilla() {
+        await this.crearContainer();
         for (let x = 0; x < this.celdaALoAncho; x++) {
             for (let y = 0; y < this.celdaALoAlto; y++) {
                 const celda = new Celda(this.juego, this.anchoCelda, x, y);
