@@ -4,8 +4,7 @@ class Entidad {
         this.id = Math.floor(Math.random() * 9999999);
         this.x = x;
         this.y = y;
-        this.destinoX = null;
-        this.destinoY = null;
+        this.objetivo = null;
 
         this.activo = true;
 
@@ -14,6 +13,8 @@ class Entidad {
 
         this.accX = 0;
         this.accY = 0;
+
+        this.ultimoVector = null;
 
         this.velocidadMaxima = 6;
         this.accMax = 0.1;
@@ -25,6 +26,7 @@ class Entidad {
         this.DISTANCIA_DE_ACCION = 5;
 
         this.celda = null;
+        this.llegue = false;
         this.crearContainer();
     }
 
@@ -33,8 +35,9 @@ class Entidad {
         this.container.interactive = true;
         this.container.on("pointerdown", (e) => {
             console.log("click en", this);
-            this.showInfo();
+            // this.showInfo();
             this.juego.seleccionado = this;
+            this.juego.mostrarDebug(this.miData());
         });
         this.container.x = this.x;
         this.container.y = this.y;
@@ -44,13 +47,15 @@ class Entidad {
 
     update() {
         if (!this.activo) { return }
-
-        if (this.tieneDestino()) {
-            this.irA(this.destinoX, this.destinoY);
+        // Si hay un camino, seguirlo
+        if (this.celda && this.caminoActual && this.celda == this.caminoActual[this.caminoActual.length - 1]) {
+            this.llegue = true;
+            this.objetivo = null;
+            this.caminoActual = null;
         }
+        else this.avanzarPorCamino();
 
         this.calcularVelocidad();
-
         this.actualizarMiPosicionEnLaGrilla();
     }
 
@@ -60,9 +65,9 @@ class Entidad {
         this.container.y = this.y;
 
         if (this.velX < 0) {
-            this.sprite.scale.x = -1 * this.CONSTANTE_DE_ESCALADO;
+            this.sprite.scale.x = -1;
         } else {
-            this.sprite.scale.x = 1 * this.CONSTANTE_DE_ESCALADO;
+            this.sprite.scale.x = 1;
         }
 
         this.container.zIndex = Math.floor(this.y);
@@ -72,11 +77,6 @@ class Entidad {
     aplicarAceleracion(x, y) {
         this.accX += x;
         this.accY += y;
-    }
-
-    asignarVelocidad(x, y) {
-        this.velX = x;
-        this.velY = y;
     }
 
     calcularVelocidad() {
@@ -111,7 +111,7 @@ class Entidad {
     }
 
     calcularVelocidadLineal() {
-        return Math.sqrt(this.velX * this.velX + this.velY * this.velY);
+        return Math.sqrt(this.velX ** 2 + this.velY ** 2);
     }
 
     limitarAceleracion() {
@@ -127,26 +127,107 @@ class Entidad {
     }
 
     irA(x, y) {
-        //calcula la direccion y distancia al click
+        console.log("Ir a", x, y);
+        // Buscar el camino usando A*
+        const camino = this.encontrarCaminoA(x, y);
+        // console.log("Camino encontrado:", camino);
+        if (camino.length === 0) return;
 
-        const dx = x - this.x;
-        const dy = y - this.y;
-        const distancia = Math.sqrt(dx * dx + dy * dy);
-        // si estamos cerca del objetivo detiene el movimiento
-        if (distancia < this.velocidadMaxima) {
-            this.x = x
-            this.y = y
-            setTimeout(() => {
-                //un timeout para que no se pase
-                this.destinoX = null
-                this.destinoY = null
-                this.velX = 0
-            }, 1000);
-        }
-        else
-            // ubica al pj hacia el objetivo
-            this.aplicarAceleracion(dx / distancia, dy / distancia);
+        // Guardar el camino y avanzar paso a paso en update()
+        this.caminoActual = camino;
+        this.pasoActual = 0;
     }
+
+    encontrarCaminoA(destinoX, destinoY) {
+        // implementación del algoritmo A*
+        const grilla = this.juego.grilla;
+        const inicio = grilla.obtenerCeldaEnPosicion(Math.floor(this.x), Math.floor(this.y));
+        const fin = grilla.obtenerCeldaEnPosicion(Math.floor(destinoX), Math.floor(destinoY));
+
+        if (!inicio || !fin) return [];
+
+        const openSet = [inicio];
+        const cameFrom = new Map();
+        const gScore = new Map();
+        const fScore = new Map();
+
+        gScore.set(inicio, 0);
+        fScore.set(inicio, this.juego.calcularDistancia(inicio, fin));
+
+        while (openSet.length > 0) {
+            // console.log("openSet:", openSet);
+            // Ordenar por menor fScore
+            openSet.sort((a, b) => (fScore.get(a) || Infinity) - (fScore.get(b) || Infinity));
+            const actual = openSet.shift();
+            const hash = (celda) => `x_${celda.x}_y_${celda.y}`;
+            // console.log("Actual:", actual.x, actual.y, "fScore:", fScore.get(actual));
+
+            if (actual === fin) {
+                // Reconstruir el camino
+                let camino = [actual];
+                let currHash = hash(actual);
+                while (cameFrom.has(currHash)) {
+                    const prevHash = cameFrom.get(currHash);
+                    if (prevHash === hash(inicio)) break; // ¡Cortá cuando llegues al inicio!
+                    const prevCelda = this.juego.grilla.obtenerCeldaPorHash(prevHash);
+                    camino.unshift(prevCelda);
+                    currHash = prevHash;
+                }
+                camino.unshift(inicio);
+                // console.log("Camino encontrado:", camino);
+                return camino;
+            }
+
+            for (const vecino of actual.obtenerCeldasVecinas()) {
+                // console.log("actual", actual, "gScore:", gScore.get(actual));
+                if (!vecino || !vecino.soyTransitable()) continue;
+
+                const tentative_gScore = (gScore.get(actual) ?? Infinity) + 1;
+                // console.log(gScore, tentative_gScore)
+                if (tentative_gScore < (gScore.get(vecino) || Infinity)) {
+                    cameFrom.set(hash(vecino), hash(actual));
+                    // console.log("Vecino:", vecino.x, vecino.y, "Hash:", hash(vecino), "Actual:", actual);
+                    gScore.set(vecino, tentative_gScore);
+                    fScore.set(vecino, tentative_gScore + this.juego.calcularDistancia(vecino, fin));
+
+                    if (!openSet.includes(vecino)) {
+                        openSet.push(vecino);
+                    }
+                }
+            }
+        }
+
+        // No se encontró camino
+        return [];
+    }
+
+    avanzarPorCamino() {
+        if (this.caminoActual && this.pasoActual < this.caminoActual.length && !this.llegue) {
+            // debugger;
+            console.log("Siguiendo camino, paso actual:", this.pasoActual);
+            const celdaDestino = this.caminoActual[this.pasoActual];
+
+            if (!celdaDestino.soyTransitable()) {
+                console.warn("Celda no transitable, reiniciando camino");
+                this.irA(this.objetivo.x, this.objetivo.y);
+            }
+            else {
+                const dx = celdaDestino.centro.x - this.x;
+                const dy = celdaDestino.centro.y - this.y;
+                const distancia = Math.sqrt(dx * dx + dy * dy);
+                console.log("Distancia al destino:", distancia, "Paso actual:", this.pasoActual);
+                if (distancia < 1) {
+                    this.pasoActual++;
+                    console.log("Avanzando al siguiente paso del camino:", this.pasoActual);
+                } else {
+                    this.aplicarAceleracion(dx / distancia, dy / distancia);
+                    console.log("Acelerando hacia el destino:", celdaDestino.x, celdaDestino.y);
+                }
+            }
+        }
+    }
+
+
 
     tieneDestino() {
         return this.destinoX !== null && this.destinoY !== null;

@@ -4,6 +4,8 @@ class Persona extends Entidad {
         this.spritesAnimados = {};
         this.CONSTANTE_DE_ESCALADO = 2;
 
+        this.adentro = false; // si esta adentro del supermercado o no
+
         this.crearContainer();
         this.crearPersonalidad();
         this.cargarSprites();
@@ -26,9 +28,9 @@ class Persona extends Entidad {
 
         this.sprite = new PIXI.Sprite(texture)
         this.container.addChild(this.sprite)
-        this.sprite.scale.set(2);
-        this.sprite.x = 100
-        this.sprite.y = 100
+        this.sprite.scale.set(1);
+        this.sprite.x = 0
+        this.sprite.y = 0
         this.sprite.anchor.set(0.5, 1)
         this.yaCargoElSprite = true;
     }
@@ -105,6 +107,7 @@ class Persona extends Entidad {
     miData() {
         return {
             ...super.miData(),
+            nombreCompleto: `${this.titulo} ${this.nombre} ${this.apellido}`,
             nombre: this.nombre,
             apellido: this.apellido,
             email: this.email,

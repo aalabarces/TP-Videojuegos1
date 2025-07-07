@@ -18,8 +18,9 @@ class Juego {
         this.personas = [];
         this.protagonista = null;
 
-        this.supermercado = new Supermercado(this);
         this.PLATA_INICIAL = 1000;
+
+        this.CONSTANTE_DE_ACELERACION = 1; // cuanto te empujan las flechas y puerta
 
         this.app
             .init({ width: this.ancho, height: this.alto, background: "#ffffff" })
@@ -41,14 +42,24 @@ class Juego {
         this.containerPrincipal.name = "container_principal";
         this.app.stage.addChild(this.containerPrincipal);
 
-        this.grilla = new Grilla(this, 100);
+        await this.crearGrilla().then(() => {
+            this.supermercado = new Supermercado(this);
 
-        this.app.stage.sortableChildren = true;
+            this.app.stage.sortableChildren = true;
 
-        await this.ponerFondo();
+            // await this.ponerFondo();
 
-        this.crearUI();
-        this.empezar();
+            this.crearUI();
+            this.empezar();
+        })
+
+    }
+
+    crearGrilla() {
+        return new Promise((resolve) => {
+            this.grilla = new Grilla(this, 60);
+            resolve(this.grilla);
+        });
     }
 
     empezar() {
@@ -132,35 +143,35 @@ class Juego {
         this.mouse.y = evento.y;
     }
 
-    // moverCamara() {
-    //     if (!this.fondo) return;
-    //     if (!this.protagonista) return;
-    //     if (!this.containerPrincipal) return;
-    //     // this.containerPrincipal.x = this.protagonista.x;
-    //     // this.containerPrincipal.y = this.protagonista.y;
+    moverCamara() {
+        // if (!this.fondo) return;
+        if (!this.protagonista) return;
+        if (!this.containerPrincipal) return;
+        // this.containerPrincipal.x = this.protagonista.x;
+        // this.containerPrincipal.y = this.protagonista.y;
 
-    //     const cuanto = 0.033333;
+        const cuanto = 0.033333;
 
-    //     const valorFinalX = -this.protagonista.x + this.ancho / 2;
-    //     const valorFinalY = -this.protagonista.y + this.alto / 2;
+        const valorFinalX = -this.protagonista.x + this.ancho / 2;
+        const valorFinalY = -this.protagonista.y + this.alto / 2;
 
-    //     this.containerPrincipal.x -=
-    //         (this.containerPrincipal.x - valorFinalX) * cuanto;
-    //     this.containerPrincipal.y -=
-    //         (this.containerPrincipal.y - valorFinalY) * cuanto;
+        this.containerPrincipal.x -=
+            (this.containerPrincipal.x - valorFinalX) * cuanto;
+        this.containerPrincipal.y -=
+            (this.containerPrincipal.y - valorFinalY) * cuanto;
 
-    //     if (this.containerPrincipal.x > 0) this.containerPrincipal.x = 0;
-    //     if (this.containerPrincipal.y > 0) this.containerPrincipal.y = 0;
+        if (this.containerPrincipal.x > 0) this.containerPrincipal.x = 0;
+        if (this.containerPrincipal.y > 0) this.containerPrincipal.y = 0;
 
-    //     //limite derecho
-    //     if (this.containerPrincipal.x < -this.fondo.width + this.ancho) {
-    //         this.containerPrincipal.x = -this.fondo.width + this.ancho;
-    //     }
+        //limite derecho
+        if (this.containerPrincipal.x < -this.fondo.width + this.ancho) {
+            this.containerPrincipal.x = -this.fondo.width + this.ancho;
+        }
 
-    //     if (this.containerPrincipal.y < -this.fondo.height + this.alto) {
-    //         this.containerPrincipal.y = -this.fondo.height + this.alto;
-    //     }
-    // }
+        if (this.containerPrincipal.y < -this.fondo.height + this.alto) {
+            this.containerPrincipal.y = -this.fondo.height + this.alto;
+        }
+    }
 
     ponerProtagonista() {
         this.protagonista = new Protagonista(500, 500, this);
@@ -168,10 +179,10 @@ class Juego {
     }
 
     poner_Personas(cuantas) {
-        if (!this.fondo) return;
+        // if (!this.fondo) return;
         for (let i = 0; i < cuantas; i++) {
-            let x = Math.random() * this.fondo.width;
-            let y = Math.random() * this.fondo.height;
+            let x = Math.floor(Math.random() * this.ancho);
+            let y = Math.floor(Math.random() * this.alto);
             let persona = new Cliente(x, y, this);
             this.containerPrincipal.addChild(persona.container);
             this.personas.push(persona);
@@ -179,13 +190,15 @@ class Juego {
     }
 
     ponerCaja() {
-        let caja = new Caja(300, 300, this);
+        let anchoCelda = this.grilla.anchoCelda;
+        let caja = new Caja(5 * anchoCelda, 13 * anchoCelda, this);
         this.containerPrincipal.addChild(caja.container);
         this.supermercado.cajas.push(caja);
     }
 
     ponerEstante() {
-        let estante = new Estanteria(200, 200, this);
+        let anchoCelda = this.grilla.anchoCelda;
+        let estante = new Estanteria(2 * anchoCelda, 9 * anchoCelda, this);
         this.containerPrincipal.addChild(estante.container);
         this.supermercado.estanterias.push(estante);
     }
@@ -197,15 +210,8 @@ class Juego {
     }
 
     entidadesAca(x, y) {
-        let array = [];
         let celda = this.grilla.obtenerCeldaEnPosicion(x, y);
-        for (let i = 0; i < celda.entidadesAca.length; i++) {
-            if (celda.entidadesAca[i].x == x && celda.entidadesAca[i].y == y) {
-                array.push(celda.entidadesAca[i])
-            }
-        }
-        console.log("entidadesAca", array, celda);
-        return array;
+        return celda.entidadesAca;
     }
 
     cuandoHaceClick(evento) {
@@ -213,8 +219,8 @@ class Juego {
         const ent = this.entidadesAca(evento.x, evento.y);
         ent.forEach(entidad => entidad.serClickeado());
         // después caso según dónde clickeó
-        this.protagonista.destinoX = evento.x;
-        this.protagonista.destinoY = evento.y;
+        this.protagonista.objetivo = { x: evento.x, y: evento.y };
+        this.protagonista.irA(evento.x, evento.y);
         //guardar el objeto sobre el que se hizo click para accionar cuando llegue
     }
 
@@ -277,5 +283,9 @@ class Juego {
         const dx = punto2.x - punto1.x;
         const dy = punto2.y - punto1.y;
         return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    mostrarDebug(data) {
+        console.log("Mostrando debug:", data);
     }
 }

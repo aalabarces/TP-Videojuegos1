@@ -44,11 +44,11 @@ const listaProductos = [
     "agua",
     "huevos"
 ];
-const productos = {
+let productos = {
     "pan": {
         precio: 50,
         peso: 0.5,
-        vencimiento: 3, // dias
+        vencimiento: 5, // dias
         refrigeracion: false,
         sprite: "assets/pan.png"
     },
@@ -69,21 +69,21 @@ const productos = {
     "verdura": {
         precio: 30,
         peso: 0.3,
-        vencimiento: 4, // dias
+        vencimiento: 5, // dias
         refrigeracion: false,
         sprite: "assets/verdura.png"
     },
     "agua": {
         precio: 20,
         peso: 1,
-        vencimiento: 10, // dias
+        vencimiento: 0, // dias
         refrigeracion: false,
         sprite: "assets/agua.png"
     },
     "huevos": {
         precio: 80,
         peso: 0.2,
-        vencimiento: 14, // dias
+        vencimiento: 0, // dias
         refrigeracion: false,
         sprite: "assets/huevo.png"
     },

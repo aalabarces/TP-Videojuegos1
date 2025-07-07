@@ -6,27 +6,30 @@ class Grilla {
         this.celdaALoAlto = Math.ceil(this.juego.alto / this.anchoCelda);
 
         this.celdas = {};
-
-        this.initGrilla();
-    }
-
-    crearContainer() {
-        this.container = new PIXI.Container();
-        this.container.name = "grilla";
-        this.container.x = 0;
-        this.container.y = 0;
-        this.juego.containerPrincipal.addChild(this.container);
-    }
-
-    async initGrilla() {
-        await this.crearContainer();
-        for (let x = 0; x < this.celdaALoAncho; x++) {
-            for (let y = 0; y < this.celdaALoAlto; y++) {
-                const celda = new Celda(this.juego, this.anchoCelda, x, y);
-                const hash = this.obtenerHashDePosicion(x, y);
-                this.celdas[hash] = celda;
+        this.borde = new PIXI.Graphics();
+        this.borde.name = "borde_grilla";
+        this.initGrilla().then(() => {
+            for (let i = 0; i < Object.keys(this.celdas).length; i++) {
+                const celda = this.celdas[Object.keys(this.celdas)[i]];
+                celda.obtenerEntidadesAcaYEnCeldasVecinas();
             }
-        }
+        });
+    }
+
+
+    initGrilla() {
+        return new Promise((resolve) => {
+            for (let x = 0; x < this.celdaALoAncho; x++) {
+                for (let y = 0; y < this.celdaALoAlto; y++) {
+                    const celda = new Celda(this.juego, this.anchoCelda, x, y);
+                    const hash = this.obtenerHashDePosicion(x, y);
+                    this.celdas[hash] = celda;
+                    celda.render(this.borde)
+                }
+            }
+            this.juego.containerPrincipal.addChild(this.borde);
+            resolve(true);
+        });
     }
 
     obtenerHashDePosicion(x, y) {
@@ -51,5 +54,9 @@ class Grilla {
         }
 
         return celda;
+    }
+
+    obtenerCeldaPorHash(hash) {
+        return this.celdas[hash];
     }
 }

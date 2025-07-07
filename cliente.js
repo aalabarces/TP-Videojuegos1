@@ -1,16 +1,17 @@
 class Cliente extends Persona {
     static STATES = {
+        llegando: "llegando",
         comprando: "comprando",
         pagando: "pagando",
         saliendo: "saliendo",
         buscando: "buscando",
-        agarrando: "agarrando",
         tentado: "tentado"
     };
 
     constructor(x, y, juego) {
         super(x, y, juego);
 
+        this.tipo = "cliente";
         this.container.name = "cliente";
         this.container.tint = 0x00ff00;
         this.velocidadMaxima = 1;
@@ -24,46 +25,84 @@ class Cliente extends Persona {
         this.MULTIPLICADOR_DE_ENOJO = 1;
         //tendrían que escalar según cantidad de veces que pasó (enojarse, tentarse)
 
+        // { 'tipo': 'carne', 'cantidad': 2, 'comprada': false, 'locaciones': [{x: 5, y:154}, {x:5, y:154}] }, {etc}
+        this.compras = []; //array de objetos de lista de compras
+        this.llenarListaDeCompras();
+        this.estado = Cliente.STATES.llegando; // estado del cliente
 
-        this.compras = ['carne']; //array de objetos de lista de compras
-        // this.llenarListaDeCompras();
         this.carrito = []; //array de objetos que el cliente tiene en su carrito
         this.yaPague = false;
         this.plata = 0;
-
         this.objetivo = null; // el producto que quiere comprar
-        this.pasillosTransitados = 0;
 
+        this.verSiHayTodoLoQueNecesito();
+
+        this.celdasTransitadas = [];
+        this.adentro = false;
+        this.reproduciendoAnimacionIninterrumpible = false;
     }
 
     llenarListaDeCompras() {
         let cantidadDeCompras = Math.floor(Math.random() * 5) + 1; // entre 1 y 5 compras
         for (let i = 0; i < cantidadDeCompras; i++) {
-            let producto = this.juego.grilla.obtenerProductoAlAzar();
+            let producto = listaProductos[Math.floor(Math.random() * listaProductos.length)];
             if (producto) {
-                this.compras.push(producto);
+                this.compras.push(this.generarCompra(producto));
             }
         }
     }
 
+    generarCompra(producto) {
+        // devuelve un objeto de compra con el producto y una cantidad aleatoria
+        let cantidad = Math.floor(Math.random() * 3) + 1; // entre 1 y 3 unidades del producto
+        return {
+            tipo: producto,
+            cantidad: cantidad,
+            cantidadEnCarrito: 0,
+            locaciones: [],
+        };
+    }
+
+
     finiteStateMachine() {
-        if (this.yaPague || this.enojo > this.paciencia) {
+        // si no está adentro, y no está saliendo, entonces está llegando
+        if (!this.adentro && this.estado != Cliente.STATES.saliendo) {
+            this.estado = Cliente.STATES.llegando;
+        }
+        // si ya pagó o se enojó mucho, entonces está saliendo
+        else if (this.yaPague || this.enojo > this.paciencia) {
             this.estado = Cliente.STATES.saliendo;
         }
         else {
-            if (this.compras.length > 0) {
-                if (this.estoyAlLadoDelProductoQueQuiero()) {
-                    this.estado = Cliente.STATES.agarrando;
+            // si quedan cosas en la lista
+            if (this.quedanCosasPorComprar()) {
+                this.estado = Cliente.STATES.comprando;
+            } else {
+                if (this.carrito.length > 0) { // si tiene algo que comprar
+                    this.estado = Cliente.STATES.pagando;
                 }
                 else {
-                    this.estado = Cliente.STATES.comprando;
+                    this.estado = Cliente.STATES.saliendo; // si no hay nada en el carrito, se va
                 }
-            } else {
-                this.estado = Cliente.STATES.pagando;
             }
         }
     }
 
+    quedanCosasPorComprar() {
+        // devuelve true si hay cosas en la lista de compras que no están en el carrito
+        return this.compras.some(compra => compra.cantidadEnCarrito < compra.cantidad && compra.locaciones.length > 0);
+    }
+
+    verSiHayTodoLoQueNecesito() {
+        // verifica si hay todo lo que necesito en el carrito y actualizo 
+        for (let i = 0; i < this.compras.length; i++) {
+            if (this.juego.supermercado.hayProducto(this.compras[i].tipo)) {
+                for (let j = 0; j < this.compras[i].cantidad; j++) {
+                    this.compras[i].locaciones.push(this.juego.supermercado.dondeEsta(this.compras[i].tipo));
+                }
+            }
+        }
+    }
 
     // entra, busca todos, va al mas cerca
     // objetos conocidos: ya sabe dónde están algunas cosas
@@ -71,15 +110,46 @@ class Cliente extends Persona {
     // guardar por qué celdas pasó, que busque la celda más cercana por la que no y vaya hasta que no haya celdas o ya tenga todas las cosas
 
     comprando() {
+        if (this.estoyAlLadoDelObjetivo()) {
+            this.agarrar();
+        }
         // si no hay objetivo, buscá el primero de la lista. si hay, ir
-        if (!this.objetivo) { this.objetivo = this.buscarProducto(this.compras[0]) }
+        else if (!this.objetivo) {
+            this.objetivo = this.queMeTocaComprar()
+            this.llegue = false;
+        }
         else {
             this.irA(this.objetivo.x, this.objetivo.y);
         }
     }
 
+    queMeTocaComprar() {
+        // devuelve el primer producto de la lista de compras que no tengo en el carrito
+        let listaSinComprar = this.compras.filter(compra => compra.cantidadEnCarrito < compra.cantidad && compra.locaciones.length > 0);
+        let elMasCercano = null;
+        let distanciaMinima = Infinity;
+        if (listaSinComprar.length > 0) {
+            for (let i = 0; i < listaSinComprar.length; i++) {
+                let producto = listaSinComprar[i];
+                let locacion = producto.locaciones[0]; // tomar la primera locación disponible
+                if (locacion) {
+                    let distancia = this.juego.calcularDistancia(locacion, this);
+                    if (distancia < distanciaMinima) {
+                        distanciaMinima = distancia;
+                        elMasCercano = locacion;
+                    }
+                }
+            }
+            return elMasCercano;
+        }
+        else return null;
+    }
+
     pagando() {
-        if (this.estoyAlLadoDeLaCaja()) {
+        if (this.objetivo.tipo != "caja") {
+            this.objetivo = this.buscarCaja();
+        }
+        if (this.estoyAlLadoDelObjetivo()) {
             this.pagar();
         }
         else {
@@ -87,14 +157,20 @@ class Cliente extends Persona {
         }
     }
 
-    agarrando() {
-        this.agregarProducto(this.objetivo);
-        this.quitarProducto(this.compras[0]);
+    agarrar() {
+        this.carrito.push(this.objetivo);
+        this.compras.find(compra => compra.tipo === this.objetivo.tipo).cantidadEnCarrito++;
+        this.compras.find(compra => compra.tipo === this.objetivo.tipo).locaciones.shift(); // saca la primera
+
+        this.objetivo = null;
+        // this.juego.supermercado.quitarProductoDeEstante(this.objetivo);
     }
 
     actuarSegunEstado() {
         // console.log("Estado actual:", this.estado);
         switch (this.estado) {
+            case Cliente.STATES.llegando:
+                this.entrar()
             case Cliente.STATES.comprando:
                 this.comprando();
                 break;
@@ -116,9 +192,8 @@ class Cliente extends Persona {
         }
     }
 
-
-    agregarProducto(producto) {
-        this.carrito.push(producto);
+    entrar() {
+        this.objetivo = this.juego.supermercado.puerta;
     }
 
     quitarProducto(producto) {
@@ -129,21 +204,7 @@ class Cliente extends Persona {
     }
 
     buscarProducto(producto) {
-        // console.log(this.juego.grilla.obtenerCeldaEnPosicion(this.x, this.y))
-        const productoCerca = this.celda.buscarProducto(producto);
-        if (productoCerca) {
-            return this.objetivo;
-        }
-        else {
-            // si no está en la celdas vecinas, no lo busca más. cómo hacer que "deambule"?
-            if (this.celda.siguienteCeldaEnElCamino()) {
-                this.irA(this.celda.siguienteCeldaEnElCamino().x, this.celda.siguienteCeldaEnElCamino().y);
-            }
-            else {
-                this.enojo += this.MULTIPLICADOR_DE_ENOJO;
-                this.quitarProducto(this.compras[0]); //sacar de la lista
-            }
-        }
+        return this.juego.supermercado.dondeEsta(producto);
     }
 
     hayProducto(producto) {
@@ -154,8 +215,10 @@ class Cliente extends Persona {
         if (this.muerta) return;
 
         super.update();
-        this.finiteStateMachine();
-        this.actuarSegunEstado();
+        if (!this.reproduciendoAnimacionIninterrumpible) {
+            this.finiteStateMachine();
+            this.actuarSegunEstado();
+        }
     }
 
     render() {
@@ -163,22 +226,44 @@ class Cliente extends Persona {
         super.render();
     }
 
-    estoyAlLadoDelProductoQueQuiero() {
+    estoyAlLadoDelObjetivo() {
         // devuelve si la distancia al producto que quiero es menor a DISTANCIA_DE_ACCION
         // console.log("Producto buscado:", producto);
         if (this.objetivo) {
-            let distancia = this.juego.calcularDistancia(producto, this);
+            let distancia = this.juego.calcularDistancia(this.objetivo, this);
             return distancia < this.DISTANCIA_DE_ACCION;
         }
         return false;
     }
 
-    estoyAlLadoDeLaCaja() {
-        if (this.juego.caja) {  // tendría que ser this.juego.supermercado.caja?
-            let distancia = this.juego.calcularDistancia(this.juego.caja, this);
-            return distancia < this.DISTANCIA_DE_ACCION;
+    buscarCaja() {
+        let cajas = this.juego.supermercado.cajas;
+        let elMasCercano = null;
+        let distanciaMinima = Infinity;
+        for (let i = 0; i < cajas.length; i++) {
+            let caja = cajas[i];
+            if (caja.fila.length == 0) {
+                return caja; // si la caja está vacía, voy ahí
+            }
+            let distancia = this.juego.calcularDistancia(caja, this);
+            if (distancia < distanciaMinima &&
+                caja.fila.length <= (elMasCercano ? elMasCercano.fila.length * 1.5 : Infinity)) {
+                distanciaMinima = distancia;
+                elMasCercano = caja;
+            }
         }
-        return false;
+    }
+
+    pagar() {
+        if (this.objetivo.fila)
+            this.objetivo.fila.push(this);
+    }
+
+    saliendo() {
+        if (this.adentro) { this.objetivo = this.juego.supermercado.puerta; }
+        else {
+            this.objetivo = this.juego.supermercado.finDelMapa();
+        }
     }
 
     miData() {

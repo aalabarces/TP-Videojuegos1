@@ -1,7 +1,6 @@
 class Almacenamiento extends Entidad {
     constructor(x, y, juego) {
         super(x, y, juego);
-        this.nombre = "almacenamiento";
         this.contenido = [];
         this.capacidad = 100; // Capacidad máxima del almacenamiento
         this.velocidadMaxima = 0; // Velocidad máxima del almacenamiento (no se mueve)
@@ -52,6 +51,7 @@ class Estanteria extends Almacenamiento {
     constructor(x, y, juego) {
         super(x, y, juego);
 
+        this.tipo = "estanteria";
         this.container.name = "estanteria";
 
     }
@@ -62,9 +62,9 @@ class Estanteria extends Almacenamiento {
         this.sprite = new PIXI.Sprite(texture)
         this.container.addChild(this.sprite)
         this.sprite.scale.set(1);
-        this.sprite.x = 500
-        this.sprite.y = 500
-        this.sprite.anchor.set(0.5, 1)
+        this.sprite.x = 0
+        this.sprite.y = 0
+        this.sprite.anchor.set(0, 0)
         this.yaCargoElSprite = true;
     }
 
@@ -77,6 +77,7 @@ class Heladera extends Almacenamiento {
     constructor(x, y, juego) {
         super(x, y, juego);
 
+        this.tipo = "heladera";
         this.cargarSprites("assets/heladera.png")
 
     }
@@ -92,6 +93,7 @@ class Almacen extends Almacenamiento {
         this.capacidad = 500; // Capacidad máxima del almacenamiento
         this.capacidadFrio = 500; // Capacidad máxima del almacenamiento en frío
         this.contenidoFrio = [];
+        this.tipo = "almacen";
     }
 
     refrigerada() {
@@ -106,6 +108,7 @@ class Carrito extends Almacenamiento {
         this.velocidadMaxima = 3; // Velocidad máxima del carrito
         this.accMax = 0.1; // Aceleración máxima del carrito
         this.cargarSprites("assets/carrito.png")
+        this.tipo = "carrito";
     }
 
     refrigerada() {

@@ -1,6 +1,7 @@
 class Caja extends Entidad {
     constructor(x, y, juego) {
         super(x, y, juego);
+        this.tipo = "caja";
         this.container.name = "caja";
         this.fila = [];
 
@@ -14,16 +15,16 @@ class Caja extends Entidad {
         this.sprite = new PIXI.Sprite(texture)
         this.container.addChild(this.sprite)
         this.sprite.scale.set(1);
-        this.sprite.x = 100
-        this.sprite.y = 100
-        this.sprite.anchor.set(0.5, 1)
+        this.sprite.x = 0
+        this.sprite.y = 0
+        this.sprite.anchor.set(0, 0)
         this.yaCargoElSprite = true;
     }
 
     atenderCliente() {
-        if (this.fila.length > 0) {
+        if (this.fila.length > 0 && this.tengoEmpleado()) {
             const cliente = this.fila.shift();
-            let empleado = this.tengoEmpleado() ? this.empleadoAca() : this.juego.protagonista;
+            let empleado = this.empleadoAca();
             let venta = new Venta(this.juego, cliente, empleado, this);
             this.juego.supermercado.cobrar(venta);
         }
@@ -49,7 +50,7 @@ class Venta {
     }
 
     agregarProducto(producto) {
-        this.caja.push(producto);
+        this.productos.push(producto);
     }
 
     calcularTotal() {

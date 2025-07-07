@@ -12,6 +12,16 @@ class Supermercado {
         this.ventas = [];
 
         this.sprites = {};
+        this.cargarSprites();
+        this.crearSupermercado();
+    }
+
+    hayProducto(producto) {
+        return this.productos.some(p => p.tipo === producto.tipo);
+    }
+
+    dondeEsta(producto) {
+        return this.productos.find(p => p.tipo === producto.tipo);
     }
 
     update() {
@@ -31,6 +41,15 @@ class Supermercado {
         this.productos.forEach(producto => producto.render());
     }
 
+    async cargarSprites() {
+        let pared = await PIXI.Assets.load("assets/pared.png");
+        this.sprites['pared'] = new PIXI.Sprite(pared);
+        // let pared2 = await PIXI.Assets.load("assets/pared2.png");
+        // this.sprites['pared2'] = new PIXI.Sprite(pared2);
+        // let piso = await PIXI.Assets.load("assets/piso.png");
+        // this.sprites['piso'] = new PIXI.Sprite(piso);
+    }
+
     agregarEmpleado(empleado) {
         this.empleados.push(empleado);
     }
@@ -46,15 +65,9 @@ class Supermercado {
 
     cobrar(venta) {
         if (!venta) return;
-        for (let i = 0; i < venta.productos.length; i++) {
-            const producto = venta.productos[i];
-            const index = this.productos.indexOf(producto);
-            if (index != -1) {
-                this.productos.splice(index, 1);
-            }
-            venta.caja.reproducirAnimacion('cobrar');
-            venta.empleado.reproducirAnimacion('cobrar');
-        }
+        let cantidad = venta.productos.length;  // la duracion de la animacion es igual a la cantidad de productos
+        // venta.caja.reproducirAnimacion('cobrar', cantidad);
+        venta.empleado.reproducirAnimacion('cobrar', cantidad);
         this.dinero += venta.total;
         this.ventas.push(venta);
     }
@@ -91,4 +104,33 @@ class Supermercado {
         const puerta = this.juego.grilla.obtenerCeldaEnPosicion(x + 2, y);
         puerta.sprite = this.sprites['puerta'];
     }
+
+    finDelMapa() {
+        // Devuelve la celda donde termina el mapa, que es la puerta de salida
+        let celda = this.juego.grilla.obtenerCeldaPorHash("x_0_y_15");
+        return { x: celda.x - 10, y: celda.y }; // Ajustamos para que sea la celda antes de la puerta
+    }
 }
+
+/*
+puerta:
+x3,y:14 // x4,y:14
+
+caja:
+x5,y13
+
+flechas:
+arriba:
+x3,y:13 // x4,y:13
+derecha:
+x3,y:8 // x4,y:8
+abajo:
+x6,y8 // x7,y8
+
+estanterías:
+horizontal:
+x3,y:7 // x6,y:7
+vertical:
+x2,y:9 // x5,y:9 // x8,y:9
+
+*/

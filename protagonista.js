@@ -2,7 +2,10 @@ class Protagonista extends Persona {
     constructor(x, y, juego) {
         super(x, y, juego);
 
+        this.tipo = "protagonista";
         this.container.name = "protagonista";
+
+        this.adentro = true;
 
         // this.container.tint = 0xc915ee;
         this.velocidadMaxima = 5;
@@ -20,14 +23,10 @@ class Protagonista extends Persona {
         // this.cambiarDeSpriteSegunVelocidad();
     }
 
-    destinoAlAzar() { }
-
-
     update() {
         if (this.muerta) return;
 
         super.update();
-
         this.limitarPosicion();
     }
 
@@ -54,13 +53,21 @@ class Protagonista extends Persona {
         if (!this.juego.fondo) return;
         if (this.x > this.juego.fondo.width) {
             this.x = this.juego.fondo.width;
-            this.velX = 0;
+            // this.velX = 0;
         }
     }
 
     async cargarSprites() {
         //cargo el json
         let json = await PIXI.Assets.load("./assets/boca/boca-sheet2.json");
+
+        let animacionesIninterrumpibles = [
+            "pucho",
+            "birra",
+            "agarrar",
+            "pagar",
+            "jump",
+        ]
 
         //recorro todas las animaciones q tiene
         for (let animacion of Object.keys(json.animations)) {
@@ -70,13 +77,20 @@ class Protagonista extends Persona {
                 json.animations[animacion]
             );
 
-            this.spritesAnimados[animacion].scale.set(10);
+            // this.spritesAnimados[animacion].scaleX = 1;
+            // this.spritesAnimados[animacion].scaleY = 1;
+            // this.spriteSeleccionado[animacion].antialias ???
             this.spritesAnimados[animacion].animationSpeed = 0.1;
-
+            console.log("animacion", animacion);
             //q loopee
+            // IF ESTA ES CAMINAR LOOP TRUE
+            //  ELSE ONCOMPLETE
             this.spritesAnimados[animacion].loop = true;
             //y le damos play
             this.spritesAnimados[animacion].play();
+            //si es una animacion ininterrumpible, le ponemos la propiedad ininterruptible
+            this.spritesAnimados[animacion].ininterruptible = animacionesIninterrumpibles.includes(animacion)
+
             //lo metemos en el container de esta entidad/persona
             this.container.addChild(this.spritesAnimados[animacion]);
 
@@ -94,8 +108,8 @@ class Protagonista extends Persona {
         this.cambiarSpriteAnimado("pucho");
         this.yaCargoElSprite = true;
     }
-
-    cambiarSpriteAnimado(key) {
+    // cambiarSpriteAnimado(key, cambiarSpriteAnimado(otraanimacion)) {
+    cambiarSpriteAnimado(key, callback) {
         this.spriteSeleccionado = key;
         //extraemos las keys del objeto spritesAnimados
         const keys = Object.keys(this.spritesAnimados);
@@ -107,6 +121,12 @@ class Protagonista extends Persona {
 
         this.sprite = this.spritesAnimados[key];
         this.sprite.visible = true;
+
+        this.reproduciendoAnimacionIninterrumpible = this.sprite.ininterruptible || false;
+
+        this.sprite.onComplete = callback || (() => {
+            this.reproduciendoAnimacionIninterrumpible = false;
+        });
     }
 
     cambiarDeSpriteSegunVelocidad() {
@@ -138,3 +158,10 @@ class Protagonista extends Persona {
 
     }
 }
+
+
+
+/*
+finite state machine de animaciones:
+
+*/

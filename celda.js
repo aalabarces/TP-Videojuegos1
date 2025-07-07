@@ -4,18 +4,14 @@ class Celda {
         this.anchoCelda = anchoCelda;
         this.x = x;
         this.y = y;
-        this.crearContainer();
+        this.xEnPixeles = x * anchoCelda;
+        this.yEnPixeles = y * anchoCelda;
+        this.centro = {
+            x: this.xEnPixeles + anchoCelda / 2,
+            y: this.yEnPixeles + anchoCelda / 2
+        };
         this.entidadesAca = [];
         this.celdasVecinas = [];
-        this.crearBorde();
-    }
-
-    crearContainer() {
-        this.container = new PIXI.Container();
-        this.container.name = "celda";
-        this.container.x = this.x * this.anchoCelda;
-        this.container.y = this.y * this.anchoCelda;
-        this.juego.grilla.container.addChild(this.container);
     }
 
     ponerEntidad(quien) {
@@ -71,7 +67,7 @@ class Celda {
     soyTransitable() {
         if (this.entidadesAca.length == 0) return true;
         let hayAlgo = this.entidadesAca.some((entidad) => {
-            return entidad.nombre != "caja" && entidad.nombre != "almacenamiento";
+            return entidad.tipo == "caja" || entidad.tipo == "almacenamiento";
         });
         return !hayAlgo;
     }
@@ -101,12 +97,14 @@ class Celda {
             this.juego.grilla.obtenerCeldaEnPosicion(this.x, this.y - this.anchoCelda);
     }
 
-    crearBorde() {
-        // Agregamos un borde rojo para debug
-        const borde = new PIXI.Graphics();
-        borde.lineStyle(1, 0xFF0000);
-        borde.drawRect(0, 0, this.anchoCelda, this.anchoCelda);
+
+    render(borde) {
+        borde.lineStyle(1, 0xFF0000)
+            .beginFill(0xff0000)
+            .lineStyle(2, 0xffffff, 1)
+            .drawRect(this.x * this.anchoCelda, this.y * this.anchoCelda, this.anchoCelda, this.anchoCelda)
+            .stroke({ width: 2, color: 0x000000 })
         borde.zIndex = 10000;
-        this.container.addChild(borde);
+        // console.log(borde, this.x, this.y, this.anchoCelda);
     }
 }
