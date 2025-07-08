@@ -14,7 +14,7 @@ class Cliente extends Persona {
         this.tipo = "cliente";
         this.container.name = "cliente";
         this.container.tint = 0x00ff00;
-        this.velocidadMaxima = 1;
+        this.velocidadMaxima = 3;
         this.accMax = 0.33;
         this.valorFriccion = 0.95;
 
@@ -25,20 +25,25 @@ class Cliente extends Persona {
         this.MULTIPLICADOR_DE_ENOJO = 1;
         //tendrían que escalar según cantidad de veces que pasó (enojarse, tentarse)
 
-        // { 'tipo': 'carne', 'cantidad': 2, 'comprada': false, 'locaciones': [{x: 5, y:154}, {x:5, y:154}] }, {etc}
-        this.compras = []; //array de objetos de lista de compras
-        this.llenarListaDeCompras();
-        this.estado = Cliente.STATES.llegando; // estado del cliente
+        // { 'tipo': 'carne', 'cantidad': 2, 'locaciones': [{x: 5, y:154}, {x:5, y:154}] }, {etc}
+        this.compras = [{
+            tipo: 'carne',
+            cantidad: 1,
+            cantidadEnCarrito: 0,
+            hay: true,
+        }]; //array de objetos de lista de compras
+        // this.llenarListaDeCompras();
+        this.estado = Cliente.STATES.buscando; // estado del cliente
 
         this.carrito = []; //array de objetos que el cliente tiene en su carrito
         this.yaPague = false;
         this.plata = 0;
         this.objetivo = null; // el producto que quiere comprar
 
-        this.verSiHayTodoLoQueNecesito();
+        // this.verSiHayTodoLoQueNecesito();
 
         this.celdasTransitadas = [];
-        this.adentro = false;
+        this.adentro = true;
         this.reproduciendoAnimacionIninterrumpible = false;
     }
 
@@ -59,7 +64,7 @@ class Cliente extends Persona {
             tipo: producto,
             cantidad: cantidad,
             cantidadEnCarrito: 0,
-            locaciones: [],
+            hay: true,
         };
     }
 
@@ -76,7 +81,8 @@ class Cliente extends Persona {
         else {
             // si quedan cosas en la lista
             if (this.quedanCosasPorComprar()) {
-                this.estado = Cliente.STATES.comprando;
+                if (!this.objetivo) { this.estado = Cliente.STATES.buscando; }
+                else { this.estado = Cliente.STATES.comprando; }
             } else {
                 if (this.carrito.length > 0) { // si tiene algo que comprar
                     this.estado = Cliente.STATES.pagando;
@@ -86,23 +92,25 @@ class Cliente extends Persona {
                 }
             }
         }
+        console.log("Estado del cliente:", this.estado);
     }
 
     quedanCosasPorComprar() {
         // devuelve true si hay cosas en la lista de compras que no están en el carrito
-        return this.compras.some(compra => compra.cantidadEnCarrito < compra.cantidad && compra.locaciones.length > 0);
+        return this.compras.some(compra => compra.cantidadEnCarrito < compra.cantidad && compra.hay);
     }
 
-    verSiHayTodoLoQueNecesito() {
-        // verifica si hay todo lo que necesito en el carrito y actualizo 
-        for (let i = 0; i < this.compras.length; i++) {
-            if (this.juego.supermercado.hayProducto(this.compras[i].tipo)) {
-                for (let j = 0; j < this.compras[i].cantidad; j++) {
-                    this.compras[i].locaciones.push(this.juego.supermercado.dondeEsta(this.compras[i].tipo));
-                }
-            }
-        }
-    }
+    // verSiHayTodoLoQueNecesito() {
+    //     // verifica si hay todo lo que necesito en el carrito y actualizo 
+    //     for (let i = 0; i < this.compras.length; i++) {
+    //         if (this.juego.supermercado.hayProducto(this.compras[i].tipo)) {
+    //             for (let j = 0; j < this.compras[i].cantidad; j++) {
+    //                 if (!this.compras[i].locaciones) { this.compras[i].locaciones = []; }
+    //                 this.compras[i].locaciones.push(this.juego.supermercado.dondeEsta(this.compras[i].tipo));
+    //             }
+    //         }
+    //     }
+    // }
 
     // entra, busca todos, va al mas cerca
     // objetos conocidos: ya sabe dónde están algunas cosas
@@ -114,35 +122,28 @@ class Cliente extends Persona {
             this.agarrar();
         }
         // si no hay objetivo, buscá el primero de la lista. si hay, ir
-        else if (!this.objetivo) {
-            this.objetivo = this.queMeTocaComprar()
-            this.llegue = false;
-        }
         else {
             this.irA(this.objetivo.x, this.objetivo.y);
         }
     }
 
+    buscando() {
+        if (!this.objetivo) {
+            this.objetivo = this.queMeTocaComprar()
+            this.llegue = false;
+        }
+    }
+
     queMeTocaComprar() {
         // devuelve el primer producto de la lista de compras que no tengo en el carrito
-        let listaSinComprar = this.compras.filter(compra => compra.cantidadEnCarrito < compra.cantidad && compra.locaciones.length > 0);
-        let elMasCercano = null;
-        let distanciaMinima = Infinity;
-        if (listaSinComprar.length > 0) {
-            for (let i = 0; i < listaSinComprar.length; i++) {
-                let producto = listaSinComprar[i];
-                let locacion = producto.locaciones[0]; // tomar la primera locación disponible
-                if (locacion) {
-                    let distancia = this.juego.calcularDistancia(locacion, this);
-                    if (distancia < distanciaMinima) {
-                        distanciaMinima = distancia;
-                        elMasCercano = locacion;
-                    }
-                }
-            }
-            return elMasCercano;
+        let proximo = this.compras.find(compra => compra.cantidadEnCarrito < compra.cantidad && compra.hay);
+        let donde = this.juego.supermercado.hayProducto(proximo.tipo);
+        if (donde) {
+            return donde;
         }
-        else return null;
+        else {
+            proximo.hay = false;
+        }
     }
 
     pagando() {
@@ -171,6 +172,9 @@ class Cliente extends Persona {
         switch (this.estado) {
             case Cliente.STATES.llegando:
                 this.entrar()
+            case Cliente.STATES.buscando:
+                this.buscando();
+                break;
             case Cliente.STATES.comprando:
                 this.comprando();
                 break;
@@ -212,13 +216,11 @@ class Cliente extends Persona {
     }
 
     update() {
-        if (this.muerta) return;
+        // if (!this.reproduciendoAnimacionIninterrumpible) {
+        this.finiteStateMachine();
+        this.actuarSegunEstado();
 
         super.update();
-        if (!this.reproduciendoAnimacionIninterrumpible) {
-            this.finiteStateMachine();
-            this.actuarSegunEstado();
-        }
     }
 
     render() {

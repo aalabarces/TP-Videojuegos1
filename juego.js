@@ -65,7 +65,7 @@ class Juego {
     empezar() {
         console.log("empezando juego");
         this.ponerProtagonista();
-        this.poner_Personas(5);
+        this.poner_Personas(1);
         this.ponerCaja();
         this.ponerEstante();
         this.ponerCarne();
@@ -204,9 +204,11 @@ class Juego {
     }
 
     ponerCarne() {
-        let carne = new Producto(100, 100, this, 'carne');
-        this.containerPrincipal.addChild(carne.container);
-        this.supermercado.productos.push(carne);
+        for (let i = 0; i < 5; i++) {
+            let carne = new Producto(50 * i + 70, 50 * i + 70, this, 'carne');
+            this.containerPrincipal.addChild(carne.container);
+            this.supermercado.productos.push(carne);
+        }
     }
 
     entidadesAca(x, y) {
@@ -216,6 +218,10 @@ class Juego {
 
     cuandoHaceClick(evento) {
         // caso según qué click!!
+        console.log("Click en:", evento.x, evento.y);
+        console.log(this.grilla.obtenerCeldaEnPosicion(evento.x, evento.y));
+        this.grilla.obtenerCeldaEnPosicion(evento.x, evento.y).clickeada = true;
+        this.grilla.obtenerCeldaEnPosicion(evento.x, evento.y).render(this.grilla.borde);
         const ent = this.entidadesAca(evento.x, evento.y);
         ent.forEach(entidad => entidad.serClickeado());
         // después caso según dónde clickeó

@@ -17,10 +17,9 @@ class Supermercado {
     }
 
     hayProducto(producto) {
-        return this.productos.some(p => p.tipo === producto.tipo);
-    }
-
-    dondeEsta(producto) {
+        if (typeof producto === 'string') {
+            return this.productos.find(p => p.tipo === producto);
+        }
         return this.productos.find(p => p.tipo === producto.tipo);
     }
 

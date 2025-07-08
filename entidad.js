@@ -26,7 +26,6 @@ class Entidad {
         this.DISTANCIA_DE_ACCION = 5;
 
         this.celda = null;
-        this.llegue = false;
         this.crearContainer();
     }
 
@@ -46,10 +45,10 @@ class Entidad {
     }
 
     update() {
+        if (!this.juego.supermercado) return;
         if (!this.activo) { return }
         // Si hay un camino, seguirlo
         if (this.celda && this.caminoActual && this.celda == this.caminoActual[this.caminoActual.length - 1]) {
-            this.llegue = true;
             this.objetivo = null;
             this.caminoActual = null;
         }
@@ -128,11 +127,13 @@ class Entidad {
 
     irA(x, y) {
         console.log("Ir a", x, y);
+        if (this.caminoActual && this.caminoActual.length > 0) { return; }
         // Buscar el camino usando A*
         const camino = this.encontrarCaminoA(x, y);
         // console.log("Camino encontrado:", camino);
         if (camino.length === 0) return;
 
+        camino.forEach((celda, index) => { celda.clickeada = true; celda.render(this.juego.grilla.borde); });
         // Guardar el camino y avanzar paso a paso en update()
         this.caminoActual = camino;
         this.pasoActual = 0;
@@ -143,6 +144,7 @@ class Entidad {
         const grilla = this.juego.grilla;
         const inicio = grilla.obtenerCeldaEnPosicion(Math.floor(this.x), Math.floor(this.y));
         const fin = grilla.obtenerCeldaEnPosicion(Math.floor(destinoX), Math.floor(destinoY));
+        if (this.juego.grilla.obtenerCeldaEnPosicion(this.objetivo.x, this.objetivo.y) == fin && this.caminoActual) { return this.caminoActual }
 
         if (!inicio || !fin) return [];
 
@@ -172,6 +174,7 @@ class Entidad {
                     const prevCelda = this.juego.grilla.obtenerCeldaPorHash(prevHash);
                     camino.unshift(prevCelda);
                     currHash = prevHash;
+                    // debugger;
                 }
                 camino.unshift(inicio);
                 // console.log("Camino encontrado:", camino);
@@ -202,9 +205,9 @@ class Entidad {
     }
 
     avanzarPorCamino() {
-        if (this.caminoActual && this.pasoActual < this.caminoActual.length && !this.llegue) {
+        if (this.caminoActual && this.pasoActual < this.caminoActual.length) {
             // debugger;
-            console.log("Siguiendo camino, paso actual:", this.pasoActual);
+            // console.log("Siguiendo camino, paso actual:", this.pasoActual);
             const celdaDestino = this.caminoActual[this.pasoActual];
 
             if (!celdaDestino.soyTransitable()) {
@@ -215,19 +218,27 @@ class Entidad {
                 const dx = celdaDestino.centro.x - this.x;
                 const dy = celdaDestino.centro.y - this.y;
                 const distancia = Math.sqrt(dx * dx + dy * dy);
-                console.log("Distancia al destino:", distancia, "Paso actual:", this.pasoActual);
-                if (distancia < 1) {
+
+                console.log("Distancia al destino:", distancia, celdaDestino.centro.x, celdaDestino.centro.y);
+                if (distancia < this.juego.grilla.anchoCelda / 2) {
                     this.pasoActual++;
-                    console.log("Avanzando al siguiente paso del camino:", this.pasoActual);
+                    if (this.pasoActual >= this.caminoActual.length) {
+                        this.caminoActual = null; // Camino completado
+                        this.pasoActual = 0; // Reiniciar paso actual
+                        const dx = this.objetivo.x - this.x;
+                        const dy = this.objetivo.y - this.y;
+                        const distancia = Math.sqrt(dx * dx + dy * dy);
+                        this.aplicarAceleracion(dx / distancia, dy / distancia);
+                        this.objetivo = null; // Limpiar objetivo
+                    }
+                    // console.log("Avanzando al siguiente paso del camino:", this.pasoActual);
                 } else {
                     this.aplicarAceleracion(dx / distancia, dy / distancia);
-                    console.log("Acelerando hacia el destino:", celdaDestino.x, celdaDestino.y);
+                    // console.log("Acelerando hacia el destino:", celdaDestino.x, celdaDestino.y);
                 }
             }
         }
     }
-
-
 
     tieneDestino() {
         return this.destinoX !== null && this.destinoY !== null;
@@ -249,8 +260,6 @@ class Entidad {
         dc.innerHTML += `<div>velY: ${this.velY}</div>`
         dc.innerHTML += `<div>accX: ${this.accX}</div>`
         dc.innerHTML += `<div>accY: ${this.accY}</div>`
-        dc.innerHTML += `<div>destinoX: ${this.destinoX}</div>`
-        dc.innerHTML += `<div>destinoY: ${this.destinoY}</div>`
         dc.innerHTML += `<div>activo: ${this.activo}</div>`
         dc.innerHTML += `<div>velocidadMaxima: ${this.velocidadMaxima}</div>`
         dc.innerHTML += `<div>accMax: ${this.accMax}</div>`
@@ -266,8 +275,6 @@ class Entidad {
             velY: this.velY,
             accX: this.accX,
             accY: this.accY,
-            destinoX: this.destinoX,
-            destinoY: this.destinoY,
             activo: this.activo,
             velocidadMaxima: this.velocidadMaxima,
             accMax: this.accMax

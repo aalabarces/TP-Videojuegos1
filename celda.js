@@ -97,14 +97,11 @@ class Celda {
             this.juego.grilla.obtenerCeldaEnPosicion(this.x, this.y - this.anchoCelda);
     }
 
-
     render(borde) {
-        borde.lineStyle(1, 0xFF0000)
-            .beginFill(0xff0000)
-            .lineStyle(2, 0xffffff, 1)
-            .drawRect(this.x * this.anchoCelda, this.y * this.anchoCelda, this.anchoCelda, this.anchoCelda)
-            .stroke({ width: 2, color: 0x000000 })
-        borde.zIndex = 10000;
-        // console.log(borde, this.x, this.y, this.anchoCelda);
+        borde.beginFill(0x000000, 0.1);
+        borde.drawRect(this.x * this.anchoCelda, this.y * this.anchoCelda, this.anchoCelda, this.anchoCelda);
+        borde.stroke({ width: 2, color: this.clickeada ? 0x0000ff : 0x000000 });
+        borde.endFill();
+        borde.zIndex = -1;
     }
 }

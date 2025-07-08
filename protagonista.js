@@ -9,7 +9,7 @@ class Protagonista extends Persona {
 
         // this.container.tint = 0xc915ee;
         this.velocidadMaxima = 5;
-        this.accMax = 0.33;
+        this.accMax = 0.13;
         this.valorFriccion = 0.95;
 
         this.spritesAnimados = {};
@@ -20,12 +20,10 @@ class Protagonista extends Persona {
         if (!this.yaCargoElSprite) return;
         super.render();
         // this.cambiarVelocidadDelSpriteSegunVelocidadLineal();
-        // this.cambiarDeSpriteSegunVelocidad();
+        this.cambiarDeSpriteSegunVelocidad();
     }
 
     update() {
-        if (this.muerta) return;
-
         super.update();
         this.limitarPosicion();
     }
@@ -62,11 +60,15 @@ class Protagonista extends Persona {
         let json = await PIXI.Assets.load("./assets/boca/boca-sheet2.json");
 
         let animacionesIninterrumpibles = [
-            "pucho",
             "birra",
             "agarrar",
             "pagar",
             "jump",
+        ]
+
+        let animacionesLoopeables = [
+            'walk',
+            'pucho'
         ]
 
         //recorro todas las animaciones q tiene
@@ -77,15 +79,15 @@ class Protagonista extends Persona {
                 json.animations[animacion]
             );
 
-            // this.spritesAnimados[animacion].scaleX = 1;
-            // this.spritesAnimados[animacion].scaleY = 1;
+            this.spritesAnimados[animacion].nombre = animacion;
+
             // this.spriteSeleccionado[animacion].antialias ???
-            this.spritesAnimados[animacion].animationSpeed = 0.1;
+            this.spritesAnimados[animacion].animationSpeed = 0.1; // velocidad de la animacion para cada una definirla en algun lado
             console.log("animacion", animacion);
             //q loopee
             // IF ESTA ES CAMINAR LOOP TRUE
             //  ELSE ONCOMPLETE
-            this.spritesAnimados[animacion].loop = true;
+            this.spritesAnimados[animacion].loop = animacionesLoopeables.includes(animacion)
             //y le damos play
             this.spritesAnimados[animacion].play();
             //si es una animacion ininterrumpible, le ponemos la propiedad ininterruptible
@@ -102,14 +104,13 @@ class Protagonista extends Persona {
             );
         }
 
-        // this.spritesAnimados["walk"].loop = true;
-
         // this.cambiarDeSpriteSegunVelocidad();
         this.cambiarSpriteAnimado("pucho");
         this.yaCargoElSprite = true;
     }
     // cambiarSpriteAnimado(key, cambiarSpriteAnimado(otraanimacion)) {
-    cambiarSpriteAnimado(key, callback) {
+    cambiarSpriteAnimado(key) {
+        console.log("cambiando sprite a:", key);
         this.spriteSeleccionado = key;
         //extraemos las keys del objeto spritesAnimados
         const keys = Object.keys(this.spritesAnimados);
@@ -124,16 +125,23 @@ class Protagonista extends Persona {
 
         this.reproduciendoAnimacionIninterrumpible = this.sprite.ininterruptible || false;
 
-        this.sprite.onComplete = callback || (() => {
-            this.reproduciendoAnimacionIninterrumpible = false;
-        });
+        // this.sprite.onComplete = callback || (() => {
+        //     console.log("Animación completada:", key);
+        //     console.log("Reproduciendo animación ininterrumpible:", this.reproduciendoAnimacionIninterrumpible);
+        //     this.reproduciendoAnimacionIninterrumpible = false;
+        // });
     }
 
     cambiarDeSpriteSegunVelocidad() {
+        if (this.reproduciendoAnimacionIninterrumpible) return;
+        // si la velocidad lineal es mayor a 0, cambiamos el sprite a caminar
         if (this.calcularVelocidadLineal() > 0) {
-            this.cambiarSpriteAnimado("walk");
+            if (this.sprite.nombre !== "walk") {
+                this.cambiarSpriteAnimado("walk");
+            }
         } else {
-            this.cambiarSpriteAnimado("pucho");
+            if (this.sprite.nombre !== "pucho")
+                this.cambiarSpriteAnimado("pucho");
         }
     }
     cambiarVelocidadDelSpriteSegunVelocidadLineal() {
