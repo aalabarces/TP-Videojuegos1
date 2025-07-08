@@ -37,8 +37,7 @@ class Entidad {
         this.container.on("pointerdown", (e) => {
             console.log("click en", this);
             // this.showInfo();
-            this.juego.seleccionado = this;
-            this.juego.mostrarDebug(this.miData());
+            this.serClickeado()
         });
         this.container.x = this.x;
         this.container.y = this.y;
@@ -137,7 +136,10 @@ class Entidad {
         // console.log("Camino encontrado:", camino);
         if (camino.length === 0) return;
 
-        camino.forEach((celda, index) => { celda.clickeada = true; celda.render(this.juego.grilla.borde); });
+        camino.forEach((celda, index) => {
+            celda.clickeada = true;
+            // celda.render(this.juego.grilla.borde);
+        });
         // Guardar el camino y avanzar paso a paso en update()
         this.caminoActual = camino;
         this.pasoActual = 0;
@@ -295,6 +297,7 @@ class Entidad {
 
     serClickeado() {
         this.juego.seleccionado = this;
+        this.juego.mostrarDebug(this.miData());
     }
 
     showInfo() {

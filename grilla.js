@@ -24,7 +24,7 @@ class Grilla {
                     const celda = new Celda(this.juego, this.anchoCelda, x, y);
                     const hash = this.obtenerHashDePosicion(x, y);
                     this.celdas[hash] = celda;
-                    celda.render(this.borde)
+                    // celda.render(this.borde)
                 }
             }
             this.juego.containerPrincipal.addChild(this.borde);

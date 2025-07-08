@@ -11,9 +11,16 @@ class Caja extends Entidad {
     }
 
     serClickeado() {
-        console.log("Caja clickeada");
         super.serClickeado();
+        //si el protagonista estaba en alguna caja, lo sacamos de esa caja
+        this.juego.supermercado.cajas.forEach(caja => {
+            if (caja.empleado == this.juego.protagonista) {
+                caja.empleado = null;
+            }
+        });
+        console.log("Caja clickeada");
         this.empleado = this.juego.protagonista;
+        console.log("Empleado asignado a la caja:", this.empleado);
     }
 
     async cargarSprites() {

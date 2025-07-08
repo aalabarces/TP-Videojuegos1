@@ -103,6 +103,19 @@ class Almacen extends Almacenamiento {
         this.tipo = "almacen";
     }
 
+    async cargarSprites() {
+        //cargo el json
+        let texture = await PIXI.Assets.load("assets/estante.png");
+
+        this.sprite = new PIXI.Sprite(texture)
+        this.container.addChild(this.sprite)
+        this.sprite.scale.set(1);
+        this.sprite.x = 0
+        this.sprite.y = 0
+        this.sprite.anchor.set(0, 0)
+        this.yaCargoElSprite = true;
+    }
+
     refrigerada() {
         return this.capacidadFrio > 0;
     }

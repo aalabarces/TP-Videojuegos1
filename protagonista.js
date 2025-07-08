@@ -179,7 +179,7 @@ class Protagonista extends Persona {
         // console.log("Camino encontrado:", camino);
         if (camino.length === 0) return;
 
-        camino.forEach((celda, index) => { celda.clickeada = true; celda.render(this.juego.grilla.borde); });
+        // camino.forEach((celda, index) => { celda.clickeada = true; celda.render(this.juego.grilla.borde); });
         // Guardar el camino y avanzar paso a paso en update()
         this.caminoActual = camino;
         this.pasoActual = 0;

@@ -9,8 +9,11 @@ class Supermercado {
         this.productos = [];
         this.aumento = {}; // aumento de precio por producto
 
-        this.dinero = 0;
+        this.dinero = 1000; // Dinero inicial para poder comprar productos
         this.ventas = [];
+
+        // Crear almacén del supermercado
+        this.almacen = new Almacen(-1, -1, juego); // Posición fuera del mapa visible
 
         this.sprites = {};
         this.cargarSprites();
@@ -117,6 +120,33 @@ class Supermercado {
         // Devuelve la celda donde termina el mapa, que es la puerta de salida
         let celda = this.juego.grilla.obtenerCeldaPorHash("x_0_y_15");
         return { x: celda.x - 10, y: celda.y }; // Ajustamos para que sea la celda antes de la puerta
+    }
+
+    comprarProducto(tipoProducto, cantidad = 1) {
+        if (!productos[tipoProducto]) {
+            console.error(`Producto ${tipoProducto} no existe`);
+            return false;
+        }
+
+        const infoProducto = productos[tipoProducto];
+        const costoTotal = infoProducto.precio * cantidad;
+
+        if (this.dinero < costoTotal) {
+            console.log(`No hay suficiente dinero. Necesitas $${costoTotal}, tienes $${this.dinero}`);
+            return false;
+        }
+
+        // Descontar dinero
+        this.dinero -= costoTotal;
+
+        // Crear y agregar productos al almacén
+        for (let i = 0; i < cantidad; i++) {
+            const nuevoProducto = new Producto(tipoProducto, this.juego);
+            this.almacen.agregarProducto(nuevoProducto);
+        }
+
+        console.log(`Comprado ${cantidad} ${tipoProducto}(s) por $${costoTotal}. Dinero restante: $${this.dinero}`);
+        return true;
     }
 }
 

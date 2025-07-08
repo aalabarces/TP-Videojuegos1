@@ -55,7 +55,7 @@ class Juego {
             // await this.ponerFondo();
 
             this.crearUI();
-            this.empezar();
+            // this.empezar();
         })
     }
 
@@ -73,7 +73,6 @@ class Juego {
         this.poner_Personas(15);
         this.ponerEstante();
         this.ponerProductos(20);
-        this.crearBotonesUI(); // Crear botones de UI
         this.app.ticker.add(() => this.gameLoop());
     }
 
@@ -95,6 +94,7 @@ class Juego {
         }
 
         this.protagonista.update();
+        this.ui.update();
 
         if (this.debug && this.seleccionado && this.contadorDeFrame % 60 == 0) {
             //borrar todo y crearlo de nuevo cada 60 frames no funciona, borra la foto cada vez
@@ -105,7 +105,6 @@ class Juego {
             persona.render();
         }
         this.protagonista.render();
-        this.ui.dinero.text = this.supermercado.dinero;
     }
 
     async ponerFondo() {
@@ -227,20 +226,24 @@ class Juego {
         console.log("Click en:", evento.x, evento.y);
         console.log(this.grilla.obtenerCeldaEnPosicion(evento.x, evento.y));
 
-        // saca al protagonista de la caja si estaba en una (y después lo pone de vuelta si hizo click en una)
-        this.supermercado.cajas.forEach(caja => { if (caja.empleado == this.protagonista) caja.empleado = null; });
+
+        // ESTE CÓDIGO SE EJECUTA DESPUÉS DEL QUE PONE AL PROTAGONISTA EN UNA CAJA, SACÁNDOLO
 
         // this.grilla.obtenerCeldaEnPosicion(evento.x, evento.y).clickeada = true;
-        this.grilla.obtenerCeldaEnPosicion(evento.x, evento.y).render(this.grilla.borde);
+        // this.grilla.obtenerCeldaEnPosicion(evento.x, evento.y).render(this.grilla.borde);
         const ent = this.entidadesAca(evento.x, evento.y);
-        ent.forEach(entidad => {
-            entidad.serClickeado();
-        });
-
-        // después caso según dónde clickeó
-        this.protagonista.objetivo = { x: evento.x, y: evento.y };
-        this.protagonista.irA(this.protagonista.objetivo.x, this.protagonista.objetivo.y);
-        //guardar el objeto sobre el que se hizo click para accionar cuando llegue
+        if (!ent.find(entidad => entidad.tipo == 'caja')) { //si no hay una caja
+            // saca al protagonista de la caja si estaba en una (y después lo pone de vuelta si hizo click en una)
+            this.supermercado.cajas.forEach(caja => { if (caja.empleado == this.protagonista) caja.empleado = null; });
+        }
+        // ent.forEach(entidad => {
+        //     entidad.serClickeado();
+        // });
+        if (this.protagonista) {
+            // después caso según dónde clickeó
+            this.protagonista.objetivo = { x: evento.x, y: evento.y };
+            this.protagonista.irA(this.protagonista.objetivo.x, this.protagonista.objetivo.y);
+        }
     }
 
     actuarSegunTeclasPresionadas() {
@@ -266,69 +269,7 @@ class Juego {
     }
 
     crearUI() {
-        // Crear un contenedor para la UI
-        const ui = new PIXI.Container();
-        ui.name = "ui";
-        ui.zIndex = 1000;
-        this.containerPrincipal.addChild(ui);
-        this.ui = ui;
-
-        this.crearBoxDeDatos();
-        this.crearBotonesUI();
-    }
-
-    crearBoxDeDatos() {
-        // Crear un box con datos para la UI
-        const box = new PIXI.Graphics();
-        box.beginFill(0x000000, 0.5);
-        box.drawRect(0, 0, 200, 100);
-        box.endFill();
-        box.x = this.ancho - 210;
-        box.y = this.alto - 110;
-        this.ui.addChild(box);
-
-        const texto = new PIXI.Text("Dinero:", { fontSize: 16, fill: 0xffffff });
-        texto.x = this.ancho - 200;
-        texto.y = this.alto - 100;
-        this.ui.addChild(texto);
-
-        const dinero = new PIXI.Text("0", { fontSize: 16, fill: 0xffffff });
-        dinero.x = this.ancho - 200;
-        dinero.y = this.alto - 80;
-        this.ui.addChild(dinero);
-        this.ui.dinero = dinero;
-    }
-
-    crearBotonesUI() {
-        // Crear botón para colocar cajas
-        const botonCaja = document.createElement('button');
-        botonCaja.textContent = 'Colocar Caja';
-        botonCaja.style.position = 'absolute';
-        botonCaja.style.top = '10px';
-        botonCaja.style.left = '10px';
-        botonCaja.style.zIndex = '1000';
-        botonCaja.onclick = () => this.iniciarColocacionEntidad(Caja);
-        document.body.appendChild(botonCaja);
-
-        // Crear botón para colocar estanterías
-        const botonEstanteria = document.createElement('button');
-        botonEstanteria.textContent = 'Colocar Estantería';
-        botonEstanteria.style.position = 'absolute';
-        botonEstanteria.style.top = '10px';
-        botonEstanteria.style.left = '120px';
-        botonEstanteria.style.zIndex = '1000';
-        botonEstanteria.onclick = () => this.iniciarColocacionEntidad(Estanteria);
-        document.body.appendChild(botonEstanteria);
-
-        // Crear botón para cancelar colocación
-        const botonCancelar = document.createElement('button');
-        botonCancelar.textContent = 'Cancelar (ESC)';
-        botonCancelar.style.position = 'absolute';
-        botonCancelar.style.top = '10px';
-        botonCancelar.style.left = '250px';
-        botonCancelar.style.zIndex = '1000';
-        botonCancelar.onclick = () => this.cancelarColocacion();
-        document.body.appendChild(botonCancelar);
+        this.ui = new UI(this);
     }
 
     calcularDistancia(punto1, punto2) {
@@ -387,7 +328,7 @@ class Juego {
 
         // Crear sprite fantasma
         this.crearSpriteFantasma(TipoEntidad);
-        
+
         // Agregar listeners
         this.activarListenersColocacion();
     }
@@ -410,7 +351,7 @@ class Juego {
     async crearSpriteFantasma(TipoEntidad) {
         // Crear una instancia temporal para obtener la textura
         const instanciaTemp = new TipoEntidad(0, 0, this);
-        
+
         // Esperar a que cargue el sprite
         while (!instanciaTemp.yaCargoElSprite) {
             await new Promise(resolve => setTimeout(resolve, 10));
@@ -419,20 +360,20 @@ class Juego {
         // Crear container fantasma
         this.colocacionEnProgreso.containerFantasma = new PIXI.Container();
         this.colocacionEnProgreso.spriteFantasma = new PIXI.Sprite(instanciaTemp.sprite.texture);
-        
+
         // Configurar sprite fantasma
         this.colocacionEnProgreso.spriteFantasma.alpha = 0.5;
         this.colocacionEnProgreso.spriteFantasma.tint = 0x00ff00; // Verde translúcido
         this.colocacionEnProgreso.spriteFantasma.anchor.set(0, 0);
         this.colocacionEnProgreso.spriteFantasma.scale.set(instanciaTemp.sprite.scale.x, instanciaTemp.sprite.scale.y);
-        
+
         // Añadir al container fantasma
         this.colocacionEnProgreso.containerFantasma.addChild(this.colocacionEnProgreso.spriteFantasma);
         this.colocacionEnProgreso.containerFantasma.zIndex = 10000; // Arriba de todo
-        
+
         // Añadir al stage
         this.containerPrincipal.addChild(this.colocacionEnProgreso.containerFantasma);
-        
+
         // Limpiar instancia temporal
         instanciaTemp.container.destroy();
     }
@@ -441,11 +382,11 @@ class Juego {
         // Guardar referencias a los listeners originales
         this.listenerMouseMoveOriginal = window.onmousemove;
         this.listenerMouseDownOriginal = window.onmousedown;
-        
+
         // Asignar nuevos listeners
         window.onmousemove = (evento) => this.actualizarPosicionFantasma(evento);
         window.onmousedown = (evento) => this.colocarEntidad(evento);
-        
+
         // También escuchar tecla ESC para cancelar
         this.listenerKeyDownOriginal = window.onkeydown;
         window.onkeydown = (evento) => {
@@ -459,16 +400,16 @@ class Juego {
 
     actualizarPosicionFantasma(evento) {
         if (!this.colocacionEnProgreso || !this.colocacionEnProgreso.containerFantasma) return;
-        
+
         let x = evento.clientX;
         let y = evento.clientY;
-        
+
         // Ajustar a grilla si es necesario
         if (this.colocacionEnProgreso.esAjustableAGrilla) {
             const posicionGrilla = this.ajustarAGrilla(x, y, this.colocacionEnProgreso.tamaño);
             x = posicionGrilla.x;
             y = posicionGrilla.y;
-            
+
             // Cambiar color según si la posición es válida
             if (this.esPosicionValida(posicionGrilla.x, posicionGrilla.y, this.colocacionEnProgreso.tamaño)) {
                 this.colocacionEnProgreso.spriteFantasma.tint = 0x00ff00; // Verde = válido
@@ -476,10 +417,10 @@ class Juego {
                 this.colocacionEnProgreso.spriteFantasma.tint = 0xff0000; // Rojo = inválido
             }
         }
-        
+
         this.colocacionEnProgreso.containerFantasma.x = x;
         this.colocacionEnProgreso.containerFantasma.y = y;
-        
+
         // Llamar al listener original si existe
         if (this.listenerMouseMoveOriginal) {
             this.listenerMouseMoveOriginal(evento);
@@ -489,7 +430,7 @@ class Juego {
     ajustarAGrilla(x, y, tamaño) {
         const celdaX = Math.floor(x / this.grilla.anchoCelda);
         const celdaY = Math.floor(y / this.grilla.anchoCelda);
-        
+
         return {
             x: celdaX * this.grilla.anchoCelda,
             y: celdaY * this.grilla.anchoCelda,
@@ -501,7 +442,7 @@ class Juego {
     esPosicionValida(x, y, tamaño) {
         const celdaX = Math.floor(x / this.grilla.anchoCelda);
         const celdaY = Math.floor(y / this.grilla.anchoCelda);
-        
+
         // Verificar que todas las celdas que ocupará estén libres y sean transitables
         for (let i = 0; i < tamaño.ancho; i++) {
             for (let j = 0; j < tamaño.alto; j++) {
@@ -509,51 +450,51 @@ class Juego {
                     (celdaX + i) * this.grilla.anchoCelda,
                     (celdaY + j) * this.grilla.anchoCelda
                 );
-                
+
                 if (!celda || !celda.soyTransitable() || celda.entidadesAca.length > 0) {
                     return false;
                 }
             }
         }
-        
+
         return true;
     }
 
     colocarEntidad(evento) {
         if (!this.colocacionEnProgreso) return;
-        
+
         let x = evento.clientX;
         let y = evento.clientY;
-        
+
         // Ajustar a grilla si es necesario
         if (this.colocacionEnProgreso.esAjustableAGrilla) {
             const posicionGrilla = this.ajustarAGrilla(x, y, this.colocacionEnProgreso.tamaño);
-            
+
             if (!this.esPosicionValida(posicionGrilla.x, posicionGrilla.y, this.colocacionEnProgreso.tamaño)) {
                 console.warn("Posición inválida para colocar la entidad");
                 return; // No colocar si la posición no es válida
             }
-            
+
             x = posicionGrilla.x;
             y = posicionGrilla.y;
         }
-        
+
         // Crear la entidad real
         const nuevaEntidad = new this.colocacionEnProgreso.TipoEntidad(x, y, this);
         this.containerPrincipal.addChild(nuevaEntidad.container);
-        
+
         // Agregar a los arrays correspondientes del supermercado
         this.agregarEntidadAlSupermercado(nuevaEntidad);
-        
+
         console.log(`Entidad ${this.colocacionEnProgreso.TipoEntidad.name} colocada en (${x}, ${y})`);
-        
+
         // Limpiar
         this.cancelarColocacion();
     }
 
     agregarEntidadAlSupermercado(entidad) {
         if (!this.supermercado) return;
-        
+
         if (entidad instanceof Caja) {
             this.supermercado.cajas.push(entidad);
         } else if (entidad instanceof Estanteria || entidad instanceof Almacenamiento) {
@@ -564,21 +505,22 @@ class Juego {
 
     cancelarColocacion() {
         if (!this.colocacionEnProgreso) return;
-        
+
         // Remover sprite fantasma
         if (this.colocacionEnProgreso.containerFantasma) {
             this.containerPrincipal.removeChild(this.colocacionEnProgreso.containerFantasma);
             this.colocacionEnProgreso.containerFantasma.destroy();
         }
-        
+
         // Restaurar listeners originales
         window.onmousemove = this.listenerMouseMoveOriginal;
         window.onmousedown = this.listenerMouseDownOriginal;
         window.onkeydown = this.listenerKeyDownOriginal;
-        
+
         // Limpiar estado
         this.colocacionEnProgreso = null;
-        
+
         console.log("Colocación cancelada");
     }
+
 }
