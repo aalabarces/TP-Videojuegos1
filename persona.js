@@ -76,24 +76,24 @@ class Persona extends Entidad {
     }
 
     crearPersonalidad() {
-        fetch("./MOCK_DATA.json")
-            .then((response) => response.json())
-            .then((data) => {
-                const i = Math.floor(Math.random() * data.length);
-                this.nombre = data[i].first_name;
-                this.apellido = data[i].last_name;
-                this.email = data[i].email;
-                this.genero = data[i].gender;
-                this.titulo = data[i].title;
-                this.trabajo = data[i].job;
-                this.frase = data[i].catchphrase;
-                this.imagen = data[i].avatar;
-                this.velocidadMaxima = Math.floor(Math.random() * 5) + 1; //velocidad random entre 1 y 5
-            });
+        let data = this.juego.personasData || [];
+        if (data.length === 0) { console.log("data length 0"); return }
+        const i = Math.floor(Math.random() * data.length);
+        this.nombre = data[i].first_name;
+        this.apellido = data[i].last_name;
+        this.email = data[i].email;
+        this.genero = data[i].gender;
+        this.titulo = data[i].title;
+        this.trabajo = data[i].job;
+        this.frase = data[i].catchphrase;
+        this.imagen = data[i].avatar;
+        this.velocidadMaxima = Math.floor(Math.random() * 5) + 1; //velocidad random entre 1 y 5
+
 
         //todos estos podrían tener un multiplicador/divisor por nivel. mientras más avanzado, menos pacientes, más autocontrolados
         this.plata = Math.floor(Math.random() * 1000) + 1; //plata random entre 1 y 1000
         this.paciencia = Math.floor(Math.random() * 100) + 1; //paciencia random entre 1 y 100
+        this.queCaroQueEstaTodoQueCosaEstePais = Math.floor(Math.random() * 50) + 1; //índice de indignación por precios
         // this.tentacion = Math.floor(Math.random() * 100) + 1; //tentacion random entre 1 y 100
         // this.autocontrol = Math.floor(Math.random() * 100) + 1; //autocontrol random entre 1 y 100
 

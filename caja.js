@@ -4,8 +4,16 @@ class Caja extends Entidad {
         this.tipo = "caja";
         this.container.name = "caja";
         this.fila = [];
+        this.atendiendo = false; // indica si hay un cliente siendo atendido
+        this.empleado = null; // empleado asignado a esta caja
 
         this.cargarSprites();
+    }
+
+    serClickeado() {
+        console.log("Caja clickeada");
+        super.serClickeado();
+        this.empleado = this.juego.protagonista;
     }
 
     async cargarSprites() {
@@ -23,19 +31,30 @@ class Caja extends Entidad {
 
     atenderCliente() {
         if (this.fila.length > 0 && this.tengoEmpleado()) {
+            console.log("Atendiendo cliente en caja");
             const cliente = this.fila.shift();
-            let empleado = this.empleadoAca();
-            let venta = new Venta(this.juego, cliente, empleado, this);
-            this.juego.supermercado.cobrar(venta);
+            console.log(cliente)
+            // let venta = new Venta(this.juego, cliente, empleado, this);
+            // this.juego.supermercado.cobrar(venta);
+            cliente.pagar();
         }
     }
 
     tengoEmpleado() {
-        return this.empleadoAca() != undefined;
+        return this.empleado != undefined && this.juego.calcularDistancia(this, this.empleado) < this.juego.grilla.anchoCelda;
+        // return true;
     }
 
-    empleadoAca() {
-        return this.juego.supermercado.empleados.find(empleado => empleado.puesto === this);
+    update() {
+        super.update();
+        if (this.atendiendo) {
+            // Si estamos atendiendo, no hacemos nada más
+            return;
+        }
+        if (this.fila.length > 0 && this.tengoEmpleado()) {
+            this.atendiendo = true;
+            this.atenderCliente();
+        }
     }
 }
 

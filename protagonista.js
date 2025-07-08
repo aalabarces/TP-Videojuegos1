@@ -122,6 +122,8 @@ class Protagonista extends Persona {
 
         this.sprite = this.spritesAnimados[key];
         this.sprite.visible = true;
+        this.sprite.currentFrame = 0;
+        this.sprite.play();
 
         this.reproduciendoAnimacionIninterrumpible = this.sprite.ininterruptible || false;
 
@@ -164,6 +166,84 @@ class Protagonista extends Persona {
         this.tentacion = 1; //tentacion random entre 1 y 100
         this.autocontrol = 100; //autocontrol random entre 1 y 100
 
+    }
+
+    // versiones ligeramente distintas de irA y encontrarCaminoA
+    // para que el protagonista cambie de camino si hacés click de nuevo
+
+    irA(x, y) {
+        // console.log("Ir a", x, y);
+        // Buscar el camino usando A*
+        const camino = this.encontrarCaminoA(x, y);
+        if (camino.length === 0) { debugger }
+        // console.log("Camino encontrado:", camino);
+        if (camino.length === 0) return;
+
+        camino.forEach((celda, index) => { celda.clickeada = true; celda.render(this.juego.grilla.borde); });
+        // Guardar el camino y avanzar paso a paso en update()
+        this.caminoActual = camino;
+        this.pasoActual = 0;
+    }
+    encontrarCaminoA(destinoX, destinoY) {
+        // implementación del algoritmo A*
+        const grilla = this.juego.grilla;
+        const inicio = grilla.obtenerCeldaEnPosicion(Math.floor(this.x), Math.floor(this.y));
+        const fin = grilla.obtenerCeldaEnPosicion(Math.floor(destinoX), Math.floor(destinoY));
+        // console.log("Inicio:", inicio, "Fin:", fin);
+        if (!inicio || !fin) return [];
+        const openSet = [inicio];
+        const cameFrom = new Map();
+        const gScore = new Map();
+        const fScore = new Map();
+
+        gScore.set(inicio, 0);
+        fScore.set(inicio, this.juego.calcularDistancia(inicio, fin));
+
+        while (openSet.length > 0) {
+            // console.log("openSet:", openSet);
+            // Ordenar por menor fScore
+            openSet.sort((a, b) => (fScore.get(a) || Infinity) - (fScore.get(b) || Infinity));
+            const actual = openSet.shift();
+            const hash = (celda) => `x_${celda.x}_y_${celda.y}`;
+            // console.log("Actual:", actual.x, actual.y, "fScore:", fScore.get(actual));
+
+            if (actual === fin) {
+                // Reconstruir el camino
+                let camino = [actual];
+                let currHash = hash(actual);
+                while (cameFrom.has(currHash)) {
+                    const prevHash = cameFrom.get(currHash);
+                    if (prevHash === hash(inicio)) break; // ¡Cortá cuando llegues al inicio!
+                    const prevCelda = this.juego.grilla.obtenerCeldaPorHash(prevHash);
+                    camino.unshift(prevCelda);
+                    currHash = prevHash;
+                }
+                camino.unshift(inicio);
+                // console.log("Camino encontrado:", camino);
+                return camino;
+            }
+
+            for (const vecino of actual.obtenerCeldasVecinas()) {
+                // console.log("actual", actual, "gScore:", gScore.get(actual));
+                if (!vecino || !vecino.soyTransitable()) { console.warn("no es transitable"); continue };
+
+                const tentative_gScore = (gScore.get(actual) ?? Infinity) + 1;
+                // console.log(gScore, tentative_gScore)
+                if (tentative_gScore < (gScore.get(vecino) || Infinity)) {
+                    cameFrom.set(hash(vecino), hash(actual));
+                    // console.log("Vecino:", vecino.x, vecino.y, "Hash:", hash(vecino), "Actual:", actual);
+                    gScore.set(vecino, tentative_gScore);
+                    fScore.set(vecino, tentative_gScore + this.juego.calcularDistancia(vecino, fin));
+
+                    if (!openSet.includes(vecino)) {
+                        openSet.push(vecino);
+                    }
+                }
+            }
+        }
+
+        // No se encontró camino
+        return [];
     }
 }
 

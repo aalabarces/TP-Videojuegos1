@@ -28,6 +28,10 @@ class Grilla {
                 }
             }
             this.juego.containerPrincipal.addChild(this.borde);
+            const celda = new Celda(this.juego, this.anchoCelda, -1, -1);
+            const hash = this.obtenerHashDePosicion(-1, -1);
+            this.celdas[hash] = celda;
+            this.celdaFuera = celda;
             resolve(true);
         });
     }

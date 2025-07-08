@@ -5,8 +5,9 @@ class Supermercado {
         this.estanterias = [];
         this.heladeras = [];
         this.cajas = [];
-        this.productos = [];
         this.clientes = [];
+        this.productos = [];
+        this.aumento = {}; // aumento de precio por producto
 
         this.dinero = 0;
         this.ventas = [];
@@ -60,6 +61,14 @@ class Supermercado {
     }
     agregarCaja(caja) {
         this.cajas.push(caja);
+    }
+
+    quitarProductoDeEstante(producto) {
+        let alamacenamiento = producto.dondeEstoy;
+        if (alamacenamiento) {
+            alamacenamiento.retirarProducto(producto);
+            this.productos = this.productos.filter(p => p !== producto); // eliminar el producto de la lista de productos del supermercado
+        }
     }
 
     cobrar(venta) {

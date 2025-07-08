@@ -10,15 +10,22 @@ class Almacenamiento extends Entidad {
     }
 
     agregarProducto(producto) {
-        if (entra_(producto)) {
+        if (this.entra_(producto)) {
             this.contenido.push(producto);
+            this.juego.supermercado.productos.push(producto);
         }
     }
 
+    // para agregar y para retirar: se saca del almacenamiento ¡Y! del supermercado
+    // el supermercado tiene un array con todos los productos para buscar más fácil
+    // y cada producto sabe dónde está
+
     retirarProducto(producto) {
         let index = this.contenido.indexOf(p => p.tipo == producto.tipo);
-        if (index != -1) {
+        let indexSupermercado = this.juego.supermercado.productos.indexOf(producto)
+        if (index != -1 && indexSupermercado != -1) {
             this.contenido.splice(index, 1);
+            this.juego.supermercado.productos.splice(indexSupermercado, 1);
         }
     }
 

@@ -65,11 +65,12 @@ class Celda {
     }
 
     soyTransitable() {
-        if (this.entidadesAca.length == 0) return true;
-        let hayAlgo = this.entidadesAca.some((entidad) => {
-            return entidad.tipo == "caja" || entidad.tipo == "almacenamiento";
-        });
-        return !hayAlgo;
+        // if (this.entidadesAca.length == 0) return true;
+        // let hayAlgo = this.entidadesAca.some((entidad) => {
+        //     return entidad.tipo == "caja" || entidad.tipo == "almacenamiento";
+        // });
+        // return !hayAlgo;
+        return true;
     }
 
     buscarProducto(producto) {

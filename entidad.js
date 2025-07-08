@@ -8,6 +8,8 @@ class Entidad {
 
         this.activo = true;
 
+        this.factorSeparacion = 0.01; // Factor de separación para boids
+
         this.velX = 0;
         this.velY = 0;
 
@@ -23,7 +25,7 @@ class Entidad {
 
         this.spritesAnimados = {};
         this.CONSTANTE_DE_ESCALADO = 1;
-        this.DISTANCIA_DE_ACCION = 5;
+        this.DISTANCIA_DE_ACCION = this.juego.grilla.anchoCelda / 2;
 
         this.celda = null;
         this.crearContainer();
@@ -53,12 +55,13 @@ class Entidad {
             this.caminoActual = null;
         }
         else this.avanzarPorCamino();
-
+        // this.separacion(this.juego.personas)
         this.calcularVelocidad();
         this.actualizarMiPosicionEnLaGrilla();
     }
 
     render() {
+        if (!this.activo) return;
         if (!this.yaCargoElSprite) return;
         this.container.x = this.x;
         this.container.y = this.y;
@@ -126,10 +129,11 @@ class Entidad {
     }
 
     irA(x, y) {
-        console.log("Ir a", x, y);
+        // console.log("Ir a", x, y);
         if (this.caminoActual && this.caminoActual.length > 0) { return; }
         // Buscar el camino usando A*
         const camino = this.encontrarCaminoA(x, y);
+        if (camino.length === 0) { debugger }
         // console.log("Camino encontrado:", camino);
         if (camino.length === 0) return;
 
@@ -140,14 +144,14 @@ class Entidad {
     }
 
     encontrarCaminoA(destinoX, destinoY) {
+        if (this.caminoActual) { return this.caminoActual }
+
         // implementación del algoritmo A*
         const grilla = this.juego.grilla;
         const inicio = grilla.obtenerCeldaEnPosicion(Math.floor(this.x), Math.floor(this.y));
         const fin = grilla.obtenerCeldaEnPosicion(Math.floor(destinoX), Math.floor(destinoY));
-        if (this.juego.grilla.obtenerCeldaEnPosicion(this.objetivo.x, this.objetivo.y) == fin && this.caminoActual) { return this.caminoActual }
-
+        // console.log("Inicio:", inicio, "Fin:", fin);
         if (!inicio || !fin) return [];
-
         const openSet = [inicio];
         const cameFrom = new Map();
         const gScore = new Map();
@@ -174,7 +178,6 @@ class Entidad {
                     const prevCelda = this.juego.grilla.obtenerCeldaPorHash(prevHash);
                     camino.unshift(prevCelda);
                     currHash = prevHash;
-                    // debugger;
                 }
                 camino.unshift(inicio);
                 // console.log("Camino encontrado:", camino);
@@ -183,7 +186,10 @@ class Entidad {
 
             for (const vecino of actual.obtenerCeldasVecinas()) {
                 // console.log("actual", actual, "gScore:", gScore.get(actual));
-                if (!vecino || !vecino.soyTransitable()) continue;
+                if (!vecino || !vecino.soyTransitable()) {
+                    console.warn("no es transitable");
+                    continue
+                };
 
                 const tentative_gScore = (gScore.get(actual) ?? Infinity) + 1;
                 // console.log(gScore, tentative_gScore)
@@ -215,21 +221,23 @@ class Entidad {
                 this.irA(this.objetivo.x, this.objetivo.y);
             }
             else {
-                const dx = celdaDestino.centro.x - this.x;
-                const dy = celdaDestino.centro.y - this.y;
+                const dx = celdaDestino.centro.x - (this.x + this.velX);
+                const dy = celdaDestino.centro.y - (this.y + this.velY);
                 const distancia = Math.sqrt(dx * dx + dy * dy);
 
-                console.log("Distancia al destino:", distancia, celdaDestino.centro.x, celdaDestino.centro.y);
-                if (distancia < this.juego.grilla.anchoCelda / 2) {
+                // console.log("Distancia al destino:", distancia, celdaDestino.centro.x, celdaDestino.centro.y);
+                if (distancia < this.juego.grilla.anchoCelda / 2 - 20) {
                     this.pasoActual++;
                     if (this.pasoActual >= this.caminoActual.length) {
                         this.caminoActual = null; // Camino completado
                         this.pasoActual = 0; // Reiniciar paso actual
-                        const dx = this.objetivo.x - this.x;
-                        const dy = this.objetivo.y - this.y;
-                        const distancia = Math.sqrt(dx * dx + dy * dy);
-                        this.aplicarAceleracion(dx / distancia, dy / distancia);
-                        this.objetivo = null; // Limpiar objetivo
+                        if (this.objetivo) {
+                            const dx = this.objetivo.x - this.x;
+                            const dy = this.objetivo.y - this.y;
+                            const distancia = Math.sqrt(dx * dx + dy * dy);
+                            this.aplicarAceleracion(dx / distancia, dy / distancia);
+                            this.objetivo = null; // Limpiar objetivo
+                        }
                     }
                     // console.log("Avanzando al siguiente paso del camino:", this.pasoActual);
                 } else {
@@ -237,6 +245,47 @@ class Entidad {
                     // console.log("Acelerando hacia el destino:", celdaDestino.x, celdaDestino.y);
                 }
             }
+        }
+    }
+
+    separacion(arrDePersonas) {
+        let promX = 0;
+        let promY = 0;
+
+        if (arrDePersonas.length == 0) return;
+
+        let total = 0;
+        for (let persona of arrDePersonas) {
+            if (persona == this) continue; // No me separo de mí mismo
+            // if (total >= this.cantidadMaxDeEntidadesQMiramosParaBoids) break;
+            let distancia = this.juego.calcularDistancia(this, persona);
+            if (distancia < this.juego.grilla.anchoCelda / 2) {
+                total++;
+                promX += persona.x;
+                promY += persona.y;
+            }
+        }
+        if (total == 0) return;
+
+        promX /= total;
+        promY /= total;
+
+        this.vectorQApuntaAlPromedioDePosiciones = {
+            x: this.x - promX,
+            y: this.y - promY,
+        };
+
+        this.aplicarAceleracion(
+            this.vectorQApuntaAlPromedioDePosiciones.x * this.factorSeparacion,
+            this.vectorQApuntaAlPromedioDePosiciones.y * this.factorSeparacion
+        );
+    }
+
+    sacarDelUniverso() {
+        // pasar a inactivo y remover el contenedor del juego
+        this.activo = false;
+        if (this.container && this.container.parent) {
+            this.container.parent.removeChild(this.container);
         }
     }
 
@@ -286,6 +335,10 @@ class Entidad {
             Math.floor(this.x),
             Math.floor(this.y)
         );
+        if (celdaActual == this.juego.grilla.celdaFuera) {
+            this.sacarDelUniverso()
+            return; // Si estamos fuera del mapa, no hacemos nada más
+        }
         if (this.celda && celdaActual && celdaActual != this.celda) {
             this.celda.sacarEntidad(this);
             celdaActual.ponerEntidad(this);
