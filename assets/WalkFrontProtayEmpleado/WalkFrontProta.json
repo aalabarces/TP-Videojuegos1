@@ -1,0 +1,111 @@
+{"frames": {
+
+"WalkFront01.png":
+{
+	"frame": {"x":445,"y":1,"w":49,"h":115},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":12,"y":5,"w":49,"h":115},
+	"sourceSize": {"w":73,"h":128}
+},
+"WalkFront02.png":
+{
+	"frame": {"x":392,"y":1,"w":51,"h":115},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":10,"y":5,"w":51,"h":115},
+	"sourceSize": {"w":73,"h":128}
+},
+"WalkFront03.png":
+{
+	"frame": {"x":113,"y":1,"w":55,"h":115},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":9,"y":6,"w":55,"h":115},
+	"sourceSize": {"w":73,"h":128}
+},
+"WalkFront04.png":
+{
+	"frame": {"x":170,"y":1,"w":55,"h":115},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":11,"y":5,"w":55,"h":115},
+	"sourceSize": {"w":73,"h":128}
+},
+"WalkFront05.png":
+{
+	"frame": {"x":1,"y":1,"w":54,"h":116},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":12,"y":4,"w":54,"h":116},
+	"sourceSize": {"w":73,"h":128}
+},
+"WalkFront06.png":
+{
+	"frame": {"x":602,"y":1,"w":52,"h":113},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":13,"y":5,"w":52,"h":113},
+	"sourceSize": {"w":73,"h":128}
+},
+"WalkFront07.png":
+{
+	"frame": {"x":496,"y":1,"w":48,"h":115},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":16,"y":5,"w":48,"h":115},
+	"sourceSize": {"w":73,"h":128}
+},
+"WalkFront08.png":
+{
+	"frame": {"x":338,"y":1,"w":52,"h":115},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":14,"y":5,"w":52,"h":115},
+	"sourceSize": {"w":73,"h":128}
+},
+"WalkFront09.png":
+{
+	"frame": {"x":546,"y":1,"w":54,"h":114},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":13,"y":6,"w":54,"h":114},
+	"sourceSize": {"w":73,"h":128}
+},
+"WalkFront10.png":
+{
+	"frame": {"x":227,"y":1,"w":54,"h":115},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":12,"y":5,"w":54,"h":115},
+	"sourceSize": {"w":73,"h":128}
+},
+"WalkFront11.png":
+{
+	"frame": {"x":57,"y":1,"w":54,"h":116},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":11,"y":4,"w":54,"h":116},
+	"sourceSize": {"w":73,"h":128}
+},
+"WalkFront12.png":
+{
+	"frame": {"x":283,"y":1,"w":53,"h":115},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":11,"y":4,"w":53,"h":115},
+	"sourceSize": {"w":73,"h":128}
+}},
+"animations": {
+	"WalkFront": ["WalkFront01.png","WalkFront02.png","WalkFront03.png","WalkFront04.png","WalkFront05.png","WalkFront06.png","WalkFront07.png","WalkFront08.png","WalkFront09.png","WalkFront10.png","WalkFront11.png","WalkFront12.png"]
+},
+"meta": {
+	"app": "https://www.codeandweb.com/texturepacker",
+	"version": "1.1",
+	"image": "WalkFrontProta.png",
+	"format": "RGBA8888",
+	"size": {"w":655,"h":118},
+	"scale": "1",
+	"smartupdate": "$TexturePacker:SmartUpdate:9d7c9c5b4de9e8d793d19cb2c15354c7:1f2d6df420659201e1d3e3973426d580:0d916ece0339ec1865f60c343671d7f3$"
+}
+}

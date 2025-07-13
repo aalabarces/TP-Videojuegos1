@@ -1,0 +1,36 @@
+{"frames": {
+
+"Estante01Lleno.png":
+{
+	"frame": {"x":1,"y":1,"w":176,"h":147},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":176,"h":147},
+	"sourceSize": {"w":176,"h":147}
+},
+"Estante01Medio.png":
+{
+	"frame": {"x":1,"y":150,"w":176,"h":147},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":176,"h":147},
+	"sourceSize": {"w":176,"h":147}
+},
+"Estante01Vacio.png":
+{
+	"frame": {"x":1,"y":299,"w":176,"h":147},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":176,"h":147},
+	"sourceSize": {"w":176,"h":147}
+}},
+"meta": {
+	"app": "https://www.codeandweb.com/texturepacker",
+	"version": "1.1",
+	"image": "Estante01.png",
+	"format": "RGBA8888",
+	"size": {"w":178,"h":447},
+	"scale": "1",
+	"smartupdate": "$TexturePacker:SmartUpdate:f47254a656dff85e0189bea8665e6c1b:069b3cd765f1850e218f7e5d841542fb:463d52034465e0511a0f153d8ee05c87$"
+}
+}
