@@ -46,13 +46,14 @@ class Juego {
         this.app.stage.addChild(this.containerPrincipal);
 
         await this.traerDataPersonas();
+        await this.ponerFondo();
         // await this.precargarTexturas();
         await this.crearGrilla().then(() => {
             this.supermercado = new Supermercado(this);
 
             this.app.stage.sortableChildren = true;
 
-            // await this.ponerFondo();
+            
 
             this.crearUI();
             // this.empezar();
@@ -109,17 +110,14 @@ class Juego {
 
     async ponerFondo() {
         // Cargar la textura
-        let textura = await PIXI.Assets.load("bg.png");
+        let textura = await PIXI.Assets.load("assets/piso1.png");
 
         // Crear el TilingSprite con la textura y dimensiones
-        // this.fondo = new PIXI.TilingSprite(textura, this.ancho, this.alto);
-        this.fondo = new PIXI.Sprite(textura);
-        this.fondo.width = this.ancho;
-        this.fondo.height = this.alto;
+        this.fondo = new PIXI.TilingSprite(textura, this.ancho, this.alto);
         this.fondo.zIndex = -1000; // Asegurarse de que el fondo esté detrás de todo
 
         // Añadir al escenario
-        this.containerPrincipal.addChild(this.fondo);
+        this.containerPrincipal.addChildAt(this.fondo, 0);
     }
 
     ponerEventListeners() {

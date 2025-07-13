@@ -64,15 +64,20 @@ class Estanteria extends Almacenamiento {
         this.precio = 100; // Precio de la estantería
     }
     async cargarSprites() {
-        //cargo el json
-        let texture = await PIXI.Assets.load("assets/estante.png");
-
-        this.sprite = new PIXI.Sprite(texture)
-        this.container.addChild(this.sprite)
-        this.sprite.scale.set(1);
-        this.sprite.x = 0
-        this.sprite.y = 0
-        this.sprite.anchor.set(0, 0)
+        const texture = await PIXI.Assets.load('assets/estante.png');
+        this.sprite = new PIXI.Sprite(texture);
+        this.container.addChild(this.sprite);
+        
+        const anchoCelda = this.juego.grilla.anchoCelda;
+        // Escala uniforme que hace que el ancho del sprite sea igual a la celda
+        const escala = anchoCelda / texture.width;
+        this.sprite.scale.set(escala);
+        
+        // Alinear correctamente dentro de la celda
+        this.sprite.x = 0;
+        this.sprite.y = 0;
+        this.sprite.anchor.set(0, 0);
+        
         this.yaCargoElSprite = true;
     }
 
