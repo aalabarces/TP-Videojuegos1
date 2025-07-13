@@ -6,6 +6,7 @@ class Caja extends Entidad {
         this.fila = [];
         this.atendiendo = false; // indica si hay un cliente siendo atendido
         this.empleado = null; // empleado asignado a esta caja
+        this.precio = 150; // Precio de la caja
 
         this.cargarSprites();
     }
@@ -61,6 +62,18 @@ class Caja extends Entidad {
         if (this.fila.length > 0 && this.tengoEmpleado()) {
             this.atendiendo = true;
             this.atenderCliente();
+        }
+    }
+
+    irAPosicionEnLaFila(cliente) {
+        console.log("Ir a posición en la fila de la caja");
+        if (this.fila.length == 0) {
+            cliente.irA(this.x, this.y);
+        }
+        else {
+            let posUltimo = { x: this.fila[this.fila.length - 1].x, y: this.fila[this.fila.length - 1].y };
+            cliente.irA(posUltimo.x, posUltimo.y + this.juego.grilla.anchoCelda);
+            console.log("Posición en la fila:", posUltimo);
         }
     }
 }

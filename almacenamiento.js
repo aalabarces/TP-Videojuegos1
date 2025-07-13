@@ -61,6 +61,7 @@ class Estanteria extends Almacenamiento {
         this.tipo = "estanteria";
         this.container.name = "estanteria";
 
+        this.precio = 100; // Precio de la estantería
     }
     async cargarSprites() {
         //cargo el json
@@ -85,8 +86,11 @@ class Heladera extends Almacenamiento {
         super(x, y, juego);
 
         this.tipo = "heladera";
+        this.container.name = "heladera";
+
         this.cargarSprites("assets/heladera.png")
 
+        this.precio = 200; // Precio de la heladera
     }
 
     refrigerada() {

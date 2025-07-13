@@ -244,8 +244,12 @@ class UI {
     }
 
     crearBotonesColocacion(menuX, menuY) {
-        // Botón para colocar cajas
-        const botonCaja = this.crearBoton(menuX + 30, menuY + 350, 120, 35, 'Colocar Caja', 0x3498db);
+        // Obtener precios de las clases
+        const tempCaja = { precio: 150 }; // Precio de Caja
+        const tempEstanteria = { precio: 100 }; // Precio de Estanteria
+
+        // Botón para colocar cajas con precio
+        const botonCaja = this.crearBoton(menuX + 30, menuY + 350, 150, 35, `Caja ($${tempCaja.precio})`, 0x3498db);
         botonCaja.on('pointerdown', (event) => {
             event.stopPropagation();
             this.cerrarTodosLosMenus();
@@ -257,8 +261,8 @@ class UI {
         });
         this.menuGestor.addChild(botonCaja);
 
-        // Botón para colocar estanterías
-        const botonEstanteria = this.crearBoton(menuX + 170, menuY + 350, 150, 35, 'Colocar Estantería', 0x27ae60);
+        // Botón para colocar estanterías con precio
+        const botonEstanteria = this.crearBoton(menuX + 200, menuY + 350, 180, 35, `Estantería ($${tempEstanteria.precio})`, 0x27ae60);
         botonEstanteria.on('pointerdown', (event) => {
             event.stopPropagation();
             this.cerrarTodosLosMenus();
@@ -269,18 +273,6 @@ class UI {
             }
         });
         this.menuGestor.addChild(botonEstanteria);
-
-        // Botón para cancelar colocación
-        const botonCancelar = this.crearBoton(menuX + 340, menuY + 350, 120, 35, 'Cancelar', 0xe74c3c);
-        botonCancelar.on('pointerdown', (event) => {
-            event.stopPropagation();
-            try {
-                this.juego.cancelarColocacion();
-            } catch (error) {
-                console.error('Error al cancelar colocación:', error);
-            }
-        });
-        this.menuGestor.addChild(botonCancelar);
     }
 
     crearSeccionCompras(menuX, menuY) {
@@ -289,6 +281,9 @@ class UI {
 
         // Crear input de cantidad (representado como botones +/-)
         this.crearControlCantidad(menuX, menuY);
+
+        // Crear información de precios
+        this.crearInfoPrecios(menuX, menuY);
 
         // Crear botón de comprar
         this.crearBotonComprar(menuX, menuY);
@@ -372,6 +367,7 @@ class UI {
             if (this.cantidadProducto > 1) {
                 this.cantidadProducto--;
                 this.textoCantidad.text = this.cantidadProducto.toString();
+                this.actualizarPrecios();
             }
         });
         this.menuGestor.addChild(botonMenos);
@@ -382,17 +378,54 @@ class UI {
             event.stopPropagation();
             this.cantidadProducto++;
             this.textoCantidad.text = this.cantidadProducto.toString();
+            this.actualizarPrecios();
         });
         this.menuGestor.addChild(botonMas);
     }
 
+    crearInfoPrecios(menuX, menuY) {
+        // Precio unitario
+        this.textoPrecioUnitario = new PIXI.Text('Precio unitario: $0', {
+            fontFamily: 'Arial',
+            fontSize: 14,
+            fill: 0x34495e
+        });
+        this.textoPrecioUnitario.x = menuX + 320;
+        this.textoPrecioUnitario.y = menuY + 230;
+        this.menuGestor.addChild(this.textoPrecioUnitario);
+
+        // Precio total
+        this.textoPrecioTotal = new PIXI.Text('Total: $0', {
+            fontFamily: 'Arial',
+            fontSize: 16,
+            fill: 0x2c3e50,
+            fontWeight: 'bold'
+        });
+        this.textoPrecioTotal.x = menuX + 320;
+        this.textoPrecioTotal.y = menuY + 255;
+        this.menuGestor.addChild(this.textoPrecioTotal);
+
+        // Actualizar precios iniciales
+        this.actualizarPrecios();
+    }
+
     crearBotonComprar(menuX, menuY) {
-        const botonComprar = this.crearBoton(menuX + 320, menuY + 255, 120, 30, 'Comprar', 0xf39c12);
+        const botonComprar = this.crearBoton(menuX + 320, menuY + 285, 120, 30, 'Comprar', 0xf39c12);
         botonComprar.on('pointerdown', (event) => {
             event.stopPropagation();
             this.comprarProductoSeleccionado();
         });
         this.menuGestor.addChild(botonComprar);
+    }
+
+    actualizarPrecios() {
+        if (this.productoSeleccionado && productos[this.productoSeleccionado]) {
+            const precioUnitario = productos[this.productoSeleccionado].precio;
+            const precioTotal = precioUnitario * this.cantidadProducto;
+
+            this.textoPrecioUnitario.text = `Precio unitario: $${precioUnitario}`;
+            this.textoPrecioTotal.text = `Total: $${precioTotal}`;
+        }
     }
 
     toggleSelectProductos() {
@@ -404,6 +437,7 @@ class UI {
         // Actualizar texto del botón select
         this.botonSelect.children[2].text = producto; // El texto es el tercer child (fondo, borde, texto)
         this.listaProductos.visible = false;
+        this.actualizarPrecios();
     }
 
     comprarProductoSeleccionado() {

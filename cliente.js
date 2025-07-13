@@ -288,8 +288,10 @@ class Cliente extends Persona {
     }
 
     entrarALaFilaDeLaCaja() {
-        if (this.caja.fila)
+        if (this.caja.fila) {
             this.caja.fila.push(this);
+            this.caja.irAPosicionEnLaFila(this);
+        }
     }
 
     saliendo() {
@@ -308,6 +310,17 @@ class Cliente extends Persona {
             this.yaPague = true;
             clearTimeout(timeout);
         }, this.carrito.length * 1000 > 7500 ? 7500 : this.carrito.length * 1000); // simula el tiempo de pago
+        // this.supermercado.cobrar(UNA VENTA) // cuando se implementen las ventas, acá hay que poner eso. creo que la venta tiene método pagar
+        this.juego.supermercado.sumarPlata(this.totalAPagar());
+    }
+
+    totalAPagar() {
+        // devuelve el total a pagar por el carrito
+        let total = 0;
+        for (let i = 0; i < this.carrito.length; i++) {
+            total += this.carrito[i].precio;
+        }
+        return total;
     }
 
     miData() {
